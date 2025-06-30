@@ -1,0 +1,472 @@
+# File: prometheus.yml
+# Path: NeuroCluster-Elite/docker/prometheus.yml
+# Description: Prometheus monitoring configuration for NeuroCluster Elite
+#
+# This configuration defines comprehensive monitoring for the NeuroCluster Elite
+# trading platform, including system metrics, application performance, trading
+# analytics, and algorithm efficiency monitoring.
+#
+# Metrics Collected:
+# - System metrics (CPU, memory, disk, network)
+# - Application metrics (request rates, response times, errors)
+# - Trading metrics (orders, positions, P&L, signals)
+# - Algorithm metrics (efficiency, processing time, accuracy)
+# - Database metrics (connections, query performance)
+# - Custom business metrics (portfolio performance, risk metrics)
+#
+# Features:
+# - Service discovery and auto-configuration
+# - Multiple scrape intervals for different metric types
+# - Alerting rules integration
+# - Label management and relabeling
+# - Metric retention and storage optimization
+# - High availability configuration
+#
+# Usage:
+#   prometheus --config.file=docker/prometheus.yml
+#   docker run -v $(pwd)/docker/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
+#
+# Author: Your Name
+# Created: 2025-06-30
+# Version: 1.0.0
+# License: MIT
+
+# ==================== GLOBAL CONFIGURATION ====================
+
+global:
+  # How frequently to scrape targets by default
+  scrape_interval: 15s
+  
+  # How long until a scrape request times out
+  scrape_timeout: 10s
+  
+  # How frequently to evaluate rules
+  evaluation_interval: 15s
+  
+  # External labels to add to any time series or alerts
+  external_labels:
+    cluster: 'neurocluster-elite'
+    environment: 'production'
+    region: 'us-east-1'
+    version: '1.0.0'
+
+# ==================== ALERTING CONFIGURATION ====================
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+      timeout: 10s
+      api_version: v2
+
+# ==================== RULE FILES ====================
+
+rule_files:
+  - "alert_rules.yml"
+  - "recording_rules.yml"
+  - "neurocluster_rules.yml"
+
+# ==================== SCRAPE CONFIGURATIONS ====================
+
+scrape_configs:
+
+  # ==================== PROMETHEUS SELF-MONITORING ====================
+  
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    
+  # ==================== NEUROCLUSTER ELITE SERVICES ====================
+  
+  # Main API Server
+  - job_name: 'neurocluster-api'
+    static_configs:
+      - targets: ['neurocluster-api:8000']
+    scrape_interval: 15s
+    metrics_path: /metrics
+    honor_labels: true
+    scrape_timeout: 10s
+    
+    # Custom labels for the API service
+    relabel_configs:
+      - target_label: 'service'
+        replacement: 'neurocluster-api'
+      - target_label: 'component'
+        replacement: 'backend'
+    
+    # Metric relabeling
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'neurocluster_(.+)'
+        target_label: 'neurocluster_metric'
+        replacement: '${1}'
+    
+  # Streamlit Dashboard
+  - job_name: 'neurocluster-dashboard'
+    static_configs:
+      - targets: ['neurocluster-app:8501']
+    scrape_interval: 30s
+    metrics_path: /health
+    honor_labels: true
+    
+    relabel_configs:
+      - target_label: 'service'
+        replacement: 'neurocluster-dashboard'
+      - target_label: 'component'
+        replacement: 'frontend'
+
+  # ==================== SYSTEM MONITORING ====================
+  
+  # Node Exporter for system metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+    
+    relabel_configs:
+      - target_label: 'service'
+        replacement: 'system'
+      - target_label: 'component'
+        replacement: 'node'
+
+  # cAdvisor for container metrics
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    scrape_interval: 15s
+    metrics_path: /metrics
+    
+    relabel_configs:
+      - target_label: 'service'
+        replacement: 'containers'
+      - target_label: 'component'
+        replacement: 'cadvisor'
+
+  # ==================== DATABASE MONITORING ====================
+  
+  # PostgreSQL Exporter
+  - job_name: 'postgres-exporter'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 30s
+    
+    relabel_configs:
+      - target_label: 'service'
+        replacement: 'database'
+      - target_label: 'component'
+        replacement: 'postgresql'
+
+  # Redis Exporter
+  - job_name: 'redis-exporter'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 30s
+    
+    relabel_configs:
+      - target_label: 'service'
+        replacement: 'cache'
+      - target_label: 'component'
+        replacement: 'redis'
+
+  # ==================== LOAD BALANCER MONITORING ====================
+  
+  # Nginx metrics
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx:9113']
+    scrape_interval: 15s
+    
+    relabel_configs:
+      - target_label: 'service'
+        replacement: 'load-balancer'
+      - target_label: 'component'
+        replacement: 'nginx'
+
+  # ==================== TRADING SYSTEM MONITORING ====================
+  
+  # Trading Engine Metrics
+  - job_name: 'trading-engine'
+    static_configs:
+      - targets: ['neurocluster-api:8000']
+    scrape_interval: 5s  # High frequency for trading metrics
+    metrics_path: /metrics/trading
+    honor_labels: true
+    
+    relabel_configs:
+      - target_label: 'service'
+        replacement: 'trading-engine'
+      - target_label: 'component'
+        replacement: 'core'
+
+  # Algorithm Performance Metrics
+  - job_name: 'neurocluster-algorithm'
+    static_configs:
+      - targets: ['neurocluster-api:8000']
+    scrape_interval: 5s  # High frequency for algorithm metrics
+    metrics_path: /metrics/algorithm
+    honor_labels: true
+    
+    relabel_configs:
+      - target_label: 'service'
+        replacement: 'algorithm'
+      - target_label: 'component'
+        replacement: 'neurocluster'
+
+  # Risk Management Metrics
+  - job_name: 'risk-management'
+    static_configs:
+      - targets: ['neurocluster-api:8000']
+    scrape_interval: 10s
+    metrics_path: /metrics/risk
+    honor_labels: true
+    
+    relabel_configs:
+      - target_label: 'service'
+        replacement: 'risk-management'
+      - target_label: 'component'
+        replacement: 'controls'
+
+  # ==================== EXTERNAL DATA SOURCES ====================
+  
+  # Market Data Provider Health
+  - job_name: 'market-data-health'
+    static_configs:
+      - targets: ['neurocluster-api:8000']
+    scrape_interval: 60s
+    metrics_path: /metrics/market-data
+    honor_labels: true
+    
+    relabel_configs:
+      - target_label: 'service'
+        replacement: 'market-data'
+      - target_label: 'component'
+        replacement: 'providers'
+
+  # ==================== ALERTMANAGER ====================
+  
+  - job_name: 'alertmanager'
+    static_configs:
+      - targets: ['alertmanager:9093']
+    scrape_interval: 30s
+
+  # ==================== BLACKBOX MONITORING ====================
+  
+  # External endpoint monitoring
+  - job_name: 'blackbox-http'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - http://neurocluster-app:8501/health
+        - http://neurocluster-api:8000/health
+        - https://api.polygon.io
+        - https://api.binance.com/api/v3/ping
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+      - target_label: 'service'
+        replacement: 'external-health'
+
+  # ==================== SERVICE DISCOVERY ====================
+  
+  # Docker service discovery
+  - job_name: 'docker-services'
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 30s
+    
+    relabel_configs:
+      # Only scrape containers with the prometheus label
+      - source_labels: [__meta_docker_container_label_prometheus_scrape]
+        action: keep
+        regex: true
+      
+      # Use custom port if specified
+      - source_labels: [__meta_docker_container_label_prometheus_port]
+        action: replace
+        target_label: __address__
+        regex: (.+)
+        replacement: ${1}
+      
+      # Use custom path if specified
+      - source_labels: [__meta_docker_container_label_prometheus_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+        replacement: ${1}
+      
+      # Set job name from container name
+      - source_labels: [__meta_docker_container_name]
+        action: replace
+        target_label: job
+        regex: /(.+)
+        replacement: ${1}
+
+# ==================== STORAGE CONFIGURATION ====================
+
+# Remote write configuration for long-term storage
+remote_write:
+  - url: "http://remote-storage:8086/api/v1/prom/write"
+    queue_config:
+      max_samples_per_send: 1000
+      max_shards: 200
+      capacity: 2500
+
+# Remote read configuration
+remote_read:
+  - url: "http://remote-storage:8086/api/v1/prom/read"
+    read_recent: true
+
+# ==================== CUSTOM METRIC CONFIGURATIONS ====================
+
+# Recording rules for complex calculations
+recording_rules:
+  - name: neurocluster_performance
+    interval: 30s
+    rules:
+      - record: neurocluster:algorithm_efficiency_avg
+        expr: avg_over_time(neurocluster_algorithm_efficiency[5m])
+      
+      - record: neurocluster:processing_time_p99
+        expr: histogram_quantile(0.99, neurocluster_processing_time_seconds_bucket)
+      
+      - record: neurocluster:error_rate
+        expr: rate(neurocluster_errors_total[5m]) / rate(neurocluster_requests_total[5m])
+
+# ==================== FEDERATION CONFIGURATION ====================
+
+# Federation for multi-cluster setups
+federation:
+  - job_name: 'federate'
+    scrape_interval: 15s
+    honor_labels: true
+    metrics_path: '/federate'
+    params:
+      'match[]':
+        - '{job=~"neurocluster.*"}'
+        - 'up{job=~"neurocluster.*"}'
+    static_configs:
+      - targets:
+        - 'prometheus-cluster-2:9090'
+        - 'prometheus-cluster-3:9090'
+
+# ==================== EXAMPLE CUSTOM METRICS ====================
+
+# Examples of custom metrics that NeuroCluster Elite exposes:
+
+# Algorithm Performance:
+# - neurocluster_algorithm_efficiency (gauge): Current algorithm efficiency percentage
+# - neurocluster_processing_time_seconds (histogram): Processing time distribution
+# - neurocluster_accuracy_percentage (gauge): Current prediction accuracy
+# - neurocluster_memory_usage_bytes (gauge): Algorithm memory consumption
+# - neurocluster_clusters_active (gauge): Number of active clusters
+# - neurocluster_regime_changes_total (counter): Total regime changes detected
+
+# Trading Metrics:
+# - neurocluster_trades_total (counter): Total trades executed
+# - neurocluster_orders_pending (gauge): Current pending orders
+# - neurocluster_positions_active (gauge): Current active positions
+# - neurocluster_pnl_realized_total (gauge): Total realized P&L
+# - neurocluster_pnl_unrealized_current (gauge): Current unrealized P&L
+# - neurocluster_portfolio_value_total (gauge): Total portfolio value
+# - neurocluster_signals_generated_total (counter): Trading signals generated
+
+# Risk Metrics:
+# - neurocluster_risk_score_current (gauge): Current portfolio risk score
+# - neurocluster_var_1d_dollars (gauge): 1-day Value at Risk
+# - neurocluster_max_drawdown_percentage (gauge): Maximum drawdown
+# - neurocluster_sharpe_ratio_current (gauge): Current Sharpe ratio
+# - neurocluster_position_concentration_max (gauge): Maximum position concentration
+
+# System Metrics:
+# - neurocluster_requests_total (counter): Total API requests
+# - neurocluster_response_time_seconds (histogram): API response times
+# - neurocluster_errors_total (counter): Total errors
+# - neurocluster_database_connections_active (gauge): Active DB connections
+# - neurocluster_cache_hit_ratio (gauge): Cache hit ratio
+
+# Market Data Metrics:
+# - neurocluster_market_data_updates_total (counter): Market data updates received
+# - neurocluster_market_data_latency_seconds (histogram): Market data latency
+# - neurocluster_provider_status (gauge): Data provider health status
+# - neurocluster_symbols_tracked (gauge): Number of symbols being tracked
+
+# ==================== ALERTING EXAMPLES ====================
+
+# Example alerting rules (would be in alert_rules.yml):
+
+# groups:
+#   - name: neurocluster_alerts
+#     rules:
+#       - alert: NeuroClusterAlgorithmEfficiencyLow
+#         expr: neurocluster_algorithm_efficiency < 95
+#         for: 5m
+#         labels:
+#           severity: warning
+#         annotations:
+#           summary: "NeuroCluster algorithm efficiency is low"
+#           description: "Algorithm efficiency is {{ $value }}%, below 95% threshold"
+#       
+#       - alert: NeuroClusterHighProcessingTime
+#         expr: neurocluster:processing_time_p99 > 0.1
+#         for: 2m
+#         labels:
+#           severity: critical
+#         annotations:
+#           summary: "NeuroCluster processing time is high"
+#           description: "99th percentile processing time is {{ $value }}s"
+#       
+#       - alert: NeuroClusterTradingEngineDown
+#         expr: up{job="neurocluster-api"} == 0
+#         for: 1m
+#         labels:
+#           severity: critical
+#         annotations:
+#           summary: "NeuroCluster trading engine is down"
+#           description: "The trading engine has been down for more than 1 minute"
+
+# ==================== PERFORMANCE TUNING ====================
+
+# Scrape interval optimization:
+# - High frequency (5s): Trading and algorithm metrics
+# - Medium frequency (15s): System and application metrics
+# - Low frequency (30-60s): Database and health checks
+
+# Retention policy:
+# - Local storage: 15 days for detailed metrics
+# - Remote storage: 1 year for historical analysis
+# - Recording rules: Pre-computed aggregations for dashboards
+
+# Memory optimization:
+# - Use recording rules for complex queries
+# - Limit cardinality with relabeling
+# - Configure appropriate retention periods
+# - Use remote storage for long-term data
+
+# ==================== INTEGRATION NOTES ====================
+
+# Grafana Integration:
+# - Add Prometheus as data source: http://prometheus:9090
+# - Import NeuroCluster Elite dashboards
+# - Configure alerting channels
+# - Set up automated reporting
+
+# Alertmanager Integration:
+# - Configure notification channels (email, Slack, Discord)
+# - Set up alert routing and grouping
+# - Configure alert silencing and inhibition
+# - Set up escalation policies
+
+# External Systems:
+# - Export metrics to external monitoring systems
+# - Integration with log aggregation platforms
+# - Custom webhooks for trading alerts
+# - API integration with portfolio management systems
