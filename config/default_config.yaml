@@ -1,0 +1,499 @@
+# File: default_config.yaml
+# Path: NeuroCluster-Elite/config/default_config.yaml
+# Description: Default configuration for NeuroCluster Elite Trading Platform
+#
+# This is the master configuration file that contains all default settings
+# for the NeuroCluster Elite platform. Environment-specific configs will
+# override these values as needed.
+#
+# Author: Your Name
+# Created: 2025-06-29
+# Version: 1.0.0
+# License: MIT
+
+# ==================== APPLICATION SETTINGS ====================
+application:
+  name: "NeuroCluster Elite"
+  version: "1.0.0"
+  description: "Ultimate AI-Powered Multi-Asset Trading Platform"
+  environment: "development"  # development, staging, production
+  debug: true
+  log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  timezone: "UTC"
+  locale: "en_US"
+
+# ==================== NEUROCLUSTER ALGORITHM SETTINGS ====================
+neurocluster:
+  # Core algorithm parameters (proven optimal values)
+  similarity_threshold: 0.75
+  learning_rate: 0.14
+  decay_rate: 0.02
+  max_clusters: 12
+  feature_vector_size: 12
+  
+  # Enhanced features
+  vectorization_enabled: true
+  drift_detection: true
+  adaptive_learning: true
+  health_monitoring: true
+  outlier_threshold: 2.5
+  min_cluster_size: 5
+  
+  # Performance settings
+  target_processing_time_ms: 0.045
+  max_processing_time_ms: 1.0
+  efficiency_target: 99.59
+  
+  # Memory management
+  max_history_size: 1000
+  memory_cleanup_interval: 100
+  cluster_persistence: true
+  state_backup_interval: 3600  # seconds
+
+# ==================== FEATURE EXTRACTION SETTINGS ====================
+feature_extraction:
+  # Feature categories
+  enabled_categories:
+    - "price_momentum"
+    - "volatility"
+    - "volume"
+    - "trend"
+    - "support_resistance"
+    - "sentiment"
+  
+  # Technical indicators
+  technical_indicators:
+    - "rsi"
+    - "macd"
+    - "bollinger_bands"
+    - "stochastic"
+    - "cci"
+    - "williams_r"
+    - "adx"
+    - "atr"
+  
+  # Lookback periods
+  lookback_periods: [5, 10, 20, 50]
+  
+  # Normalization
+  normalization_method: "robust"  # standard, robust, minmax
+  feature_selection: true
+  max_features: 50
+  
+  # Asset-specific features
+  asset_specific_features: true
+  crypto_specific: true
+  forex_specific: true
+  
+  # Performance
+  cache_features: true
+  parallel_extraction: true
+
+# ==================== PATTERN RECOGNITION SETTINGS ====================
+pattern_recognition:
+  # Detection sensitivity
+  pattern_sensitivity: 0.7
+  min_confidence: 0.6
+  min_pattern_length: 10
+  max_pattern_length: 100
+  
+  # Pattern types
+  enabled_patterns:
+    - "head_and_shoulders"
+    - "triangles"
+    - "flags_pennants"
+    - "double_tops_bottoms"
+    - "support_resistance"
+    - "breakouts"
+    - "candlestick_patterns"
+  
+  # Candlestick patterns
+  candlestick_sensitivity: 0.8
+  
+  # Support/Resistance
+  support_resistance_lookback: 50
+  sr_touch_tolerance: 0.02
+  min_touches: 2
+  
+  # Machine learning patterns
+  enable_ml_patterns: true
+  ml_model_retrain_interval: 1000
+  
+  # Performance
+  max_patterns_per_scan: 20
+  pattern_cache_size: 500
+
+# ==================== TRADING ENGINE SETTINGS ====================
+trading:
+  # Basic settings
+  paper_trading: true  # Start in paper trading mode
+  initial_capital: 100000.0
+  base_currency: "USD"
+  
+  # Position management
+  max_positions: 20
+  max_position_size: 0.10  # 10% of portfolio
+  min_position_size: 0.01  # 1% of portfolio
+  position_sizing_method: "kelly"  # fixed, percentage, kelly, volatility
+  
+  # Order management
+  default_order_type: "market"  # market, limit, stop
+  order_timeout: 300  # seconds
+  slippage_tolerance: 0.001  # 0.1%
+  partial_fill_threshold: 0.9  # 90%
+  
+  # Strategy selection
+  auto_strategy_selection: true
+  strategy_confidence_threshold: 0.6
+  max_strategies_per_asset: 3
+  strategy_rebalance_interval: 3600  # seconds
+
+# ==================== DATA MANAGEMENT SETTINGS ====================
+data:
+  # Data sources
+  primary_stock_provider: "yfinance"
+  primary_crypto_provider: "ccxt"
+  primary_forex_provider: "alpha_vantage"
+  
+  # Data refresh intervals (seconds)
+  real_time_interval: 1
+  minute_interval: 60
+  hourly_interval: 3600
+  daily_interval: 86400
+  
+  # Data storage
+  cache_enabled: true
+  cache_ttl: 300  # seconds
+  database_enabled: true
+  data_retention_days: 365
+  
+  # Data validation
+  enable_data_validation: true
+  outlier_detection: true
+  missing_data_threshold: 0.05
+  data_quality_threshold: 0.95
+  
+  # Backup settings
+  enable_data_backup: true
+  backup_interval: 86400  # daily
+  backup_retention_days: 30
+
+# ==================== SUPPORTED ASSETS ====================
+assets:
+  # Stock markets
+  stocks:
+    default_symbols: ["AAPL", "GOOGL", "MSFT", "AMZN", "TSLA", "NVDA", "META", "BRK-B", "JPM", "JNJ"]
+    max_symbols: 500
+    min_volume: 1000000
+    min_market_cap: 1000000000  # $1B
+    exchanges: ["NYSE", "NASDAQ", "AMEX"]
+  
+  # Cryptocurrencies
+  crypto:
+    default_symbols: ["BTC-USD", "ETH-USD", "ADA-USD", "SOL-USD", "DOT-USD", "MATIC-USD", "LINK-USD", "UNI-USD"]
+    max_symbols: 200
+    min_volume_24h: 10000000  # $10M
+    min_market_cap: 100000000  # $100M
+    exchanges: ["binance", "coinbase", "kraken", "bitfinex"]
+  
+  # Forex pairs
+  forex:
+    default_symbols: ["EUR/USD", "GBP/USD", "USD/JPY", "USD/CHF", "AUD/USD", "USD/CAD", "NZD/USD"]
+    max_symbols: 50
+    major_pairs: ["EUR/USD", "GBP/USD", "USD/JPY", "USD/CHF", "AUD/USD", "USD/CAD", "NZD/USD"]
+    minor_pairs: ["EUR/GBP", "EUR/JPY", "GBP/JPY", "CHF/JPY", "EUR/CHF", "AUD/JPY", "GBP/CHF"]
+  
+  # Commodities
+  commodities:
+    default_symbols: ["GC=F", "CL=F", "SI=F", "NG=F", "HG=F", "PL=F", "PA=F"]
+    max_symbols: 30
+    categories: ["precious_metals", "energy", "agriculture", "industrial_metals"]
+
+# ==================== SERVER SETTINGS ====================
+server:
+  # Web server
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+  timeout: 300
+  keepalive: 2
+  
+  # API settings
+  api_version: "v1"
+  rate_limit_requests: 1000
+  rate_limit_window: 3600  # per hour
+  cors_enabled: true
+  cors_origins: ["*"]
+  
+  # WebSocket settings
+  websocket_enabled: true
+  max_connections: 100
+  ping_interval: 30
+  ping_timeout: 10
+  
+  # Security
+  require_authentication: false  # Disable for development
+  jwt_secret: "change-this-in-production"
+  jwt_expiry: 86400  # 24 hours
+  https_enabled: false
+  ssl_cert_path: ""
+  ssl_key_path: ""
+
+# ==================== DATABASE SETTINGS ====================
+database:
+  # Database type
+  type: "sqlite"  # sqlite, postgresql, mysql
+  
+  # SQLite settings (development)
+  sqlite:
+    path: "data/neurocluster_elite.db"
+    timeout: 30
+    check_same_thread: false
+  
+  # PostgreSQL settings (production)
+  postgresql:
+    host: "localhost"
+    port: 5432
+    database: "neurocluster_elite"
+    username: "neurocluster"
+    password: ""  # Set via environment variable
+    pool_size: 20
+    max_overflow: 30
+  
+  # Connection settings
+  pool_recycle: 3600
+  pool_pre_ping: true
+  echo_sql: false
+
+# ==================== CACHE SETTINGS ====================
+cache:
+  # Cache type
+  type: "memory"  # memory, redis, memcached
+  
+  # Memory cache settings
+  memory:
+    max_size: 1000
+    ttl: 300
+  
+  # Redis settings
+  redis:
+    host: "localhost"
+    port: 6379
+    db: 0
+    password: ""
+    socket_timeout: 5
+    connection_pool_size: 50
+  
+  # Cache policies
+  market_data_ttl: 60
+  technical_indicators_ttl: 300
+  pattern_results_ttl: 900
+  portfolio_data_ttl: 30
+
+# ==================== LOGGING SETTINGS ====================
+logging:
+  # Log levels by component
+  levels:
+    root: "INFO"
+    neurocluster: "INFO"
+    trading: "INFO"
+    data: "WARNING"
+    patterns: "INFO"
+    server: "INFO"
+  
+  # Log formats
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  date_format: "%Y-%m-%d %H:%M:%S"
+  
+  # File logging
+  file_enabled: true
+  file_path: "logs/neurocluster_elite.log"
+  file_max_size: 10485760  # 10MB
+  file_backup_count: 5
+  file_rotation: "size"  # size, time
+  
+  # Console logging
+  console_enabled: true
+  console_level: "INFO"
+  
+  # Structured logging
+  json_format: false
+  include_trace: false
+
+# ==================== MONITORING SETTINGS ====================
+monitoring:
+  # Performance monitoring
+  enable_metrics: true
+  metrics_interval: 60  # seconds
+  metrics_retention: 86400  # 24 hours
+  
+  # Health checks
+  health_check_interval: 30  # seconds
+  health_check_timeout: 5  # seconds
+  
+  # Alerts
+  enable_alerts: true
+  alert_cooldown: 300  # seconds
+  performance_threshold: 1.0  # seconds
+  error_rate_threshold: 0.05  # 5%
+  memory_usage_threshold: 0.85  # 85%
+  
+  # External monitoring
+  prometheus_enabled: false
+  prometheus_port: 9090
+  grafana_enabled: false
+
+# ==================== SECURITY SETTINGS ====================
+security:
+  # Encryption
+  encryption_enabled: true
+  encryption_algorithm: "AES-256-GCM"
+  key_rotation_interval: 2592000  # 30 days
+  
+  # API Security
+  api_key_required: false  # Disable for development
+  rate_limiting: true
+  request_timeout: 30
+  max_request_size: 10485760  # 10MB
+  
+  # Data protection
+  sensitive_data_encryption: true
+  api_key_encryption: true
+  password_hashing: "bcrypt"
+  
+  # Audit logging
+  audit_enabled: true
+  audit_retention_days: 90
+
+# ==================== NOTIFICATION SETTINGS ====================
+notifications:
+  # Enabled channels
+  enabled_channels: []  # Start with no notifications
+  
+  # Email notifications
+  email:
+    enabled: false
+    smtp_server: ""
+    smtp_port: 587
+    username: ""
+    password: ""
+    use_tls: true
+    from_address: ""
+  
+  # Discord notifications
+  discord:
+    enabled: false
+    webhook_url: ""
+    bot_token: ""
+    channel_id: ""
+  
+  # Telegram notifications
+  telegram:
+    enabled: false
+    bot_token: ""
+    chat_id: ""
+  
+  # Mobile push notifications
+  mobile:
+    enabled: false
+    firebase_credentials: ""
+    apns_certificate: ""
+
+# ==================== DEVELOPMENT SETTINGS ====================
+development:
+  # Debug settings
+  auto_reload: true
+  debug_toolbar: true
+  profiling_enabled: true
+  
+  # Testing
+  test_mode: false
+  mock_data: false
+  paper_trading_only: true
+  
+  # Development tools
+  api_documentation: true
+  swagger_ui: true
+  database_admin: true
+  
+  # Sample data
+  load_sample_data: true
+  sample_portfolio_size: 10
+  sample_historical_days: 100
+
+# ==================== BACKUP AND RECOVERY ====================
+backup:
+  # Backup settings
+  enabled: true
+  backup_path: "backups/"
+  backup_format: "json"  # json, sql, binary
+  
+  # Backup schedule
+  daily_backup: true
+  weekly_backup: true
+  monthly_backup: true
+  
+  # Retention
+  daily_retention: 7
+  weekly_retention: 4
+  monthly_retention: 12
+  
+  # Cloud backup
+  cloud_backup_enabled: false
+  cloud_provider: ""  # aws, gcp, azure
+  cloud_bucket: ""
+  cloud_credentials: ""
+
+# ==================== FEATURE FLAGS ====================
+features:
+  # Trading features
+  live_trading: false  # Disabled by default
+  paper_trading: true
+  backtesting: true
+  portfolio_management: true
+  
+  # Analysis features
+  technical_analysis: true
+  sentiment_analysis: true
+  pattern_recognition: true
+  market_scanning: true
+  
+  # Interface features
+  web_dashboard: true
+  mobile_api: true
+  voice_commands: false  # Disable until properly configured
+  console_interface: true
+  
+  # Integration features
+  broker_integration: false  # Disabled until brokers configured
+  exchange_integration: false  # Disabled until exchanges configured
+  social_media_integration: false
+  news_integration: true
+  
+  # Advanced features
+  machine_learning: true
+  neural_networks: true
+  ensemble_strategies: true
+  multi_timeframe_analysis: true
+
+# ==================== EXPERIMENTAL FEATURES ====================
+experimental:
+  # These features are under development
+  quantum_clustering: false
+  reinforcement_learning: false
+  genetic_algorithms: false
+  blockchain_integration: false
+  decentralized_trading: false
+  
+  # Research features
+  academic_mode: false
+  research_data_collection: false
+  algorithm_comparison: false
+  performance_benchmarking: true
+
+# ==================== ENVIRONMENT OVERRIDES ====================
+# Note: Environment-specific config files will override these defaults
+# - development.yaml: Overrides for development environment
+# - staging.yaml: Overrides for staging environment  
+# - production.yaml: Overrides for production environment
+# - user.yaml: User-specific overrides

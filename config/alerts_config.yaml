@@ -1,0 +1,677 @@
+# File: alerts_config.yaml
+# Path: NeuroCluster-Elite/config/alerts_config.yaml
+# Description: Alert and notification configuration for NeuroCluster Elite
+#
+# This configuration file contains all alert and notification settings
+# including trading alerts, system alerts, risk alerts, and notification
+# channels for the NeuroCluster Elite platform.
+#
+# Author: Your Name
+# Created: 2025-06-29
+# Version: 1.0.0
+# License: MIT
+
+# ==================== GLOBAL ALERT SETTINGS ====================
+global_alerts:
+  # Master alert controls
+  alerts_enabled: true
+  master_volume: "medium"  # low, medium, high, critical_only
+  cooldown_period_seconds: 300  # 5 minutes default cooldown
+  max_alerts_per_hour: 100
+  max_alerts_per_day: 1000
+  
+  # Alert priorities
+  priority_levels:
+    critical: 1    # Immediate attention required
+    high: 2        # Important but not critical
+    medium: 3      # Standard notifications
+    low: 4         # Informational only
+    info: 5        # General information
+  
+  # Alert categories
+  categories:
+    - "trading"
+    - "portfolio"
+    - "risk"
+    - "system"
+    - "market"
+    - "performance"
+    - "security"
+    - "compliance"
+  
+  # Time-based alert rules
+  time_rules:
+    market_hours_only: false    # Send alerts 24/7
+    weekend_alerts: true        # Include weekend alerts (crypto)
+    night_alerts: false         # Suppress non-critical alerts 10PM-6AM
+    holiday_alerts: false       # Suppress non-critical alerts on holidays
+  
+  # Alert deduplication
+  deduplication:
+    enabled: true
+    time_window_minutes: 30     # Deduplicate similar alerts within 30 minutes
+    similarity_threshold: 0.8   # 80% similarity threshold
+
+# ==================== TRADING ALERTS ====================
+trading_alerts:
+  # Trade execution alerts
+  trade_execution:
+    enabled: true
+    priority: "medium"
+    cooldown_seconds: 60
+    
+    # Alert conditions
+    alerts:
+      - name: "trade_filled"
+        enabled: true
+        priority: "medium"
+        message: "Trade filled: {side} {quantity} {symbol} at {price}"
+        channels: ["dashboard", "log"]
+        
+      - name: "trade_rejected"
+        enabled: true
+        priority: "high"
+        message: "Trade rejected: {symbol} - {reason}"
+        channels: ["dashboard", "log", "email"]
+        
+      - name: "partial_fill"
+        enabled: true
+        priority: "medium"
+        message: "Partial fill: {filled_quantity}/{total_quantity} {symbol}"
+        channels: ["dashboard", "log"]
+        
+      - name: "order_timeout"
+        enabled: true
+        priority: "high"
+        message: "Order timeout: {symbol} - {order_type} order expired"
+        channels: ["dashboard", "log", "email"]
+  
+  # Signal alerts
+  trading_signals:
+    enabled: true
+    priority: "medium"
+    cooldown_seconds: 300  # 5 minutes
+    min_confidence_threshold: 0.7
+    
+    alerts:
+      - name: "strong_buy_signal"
+        enabled: true
+        priority: "high"
+        confidence_threshold: 0.8
+        message: "Strong BUY signal: {symbol} - Confidence: {confidence}%"
+        channels: ["dashboard", "mobile", "discord"]
+        
+      - name: "strong_sell_signal"
+        enabled: true
+        priority: "high"
+        confidence_threshold: 0.8
+        message: "Strong SELL signal: {symbol} - Confidence: {confidence}%"
+        channels: ["dashboard", "mobile", "discord"]
+        
+      - name: "momentum_signal"
+        enabled: true
+        priority: "medium"
+        message: "Momentum signal: {symbol} - {direction} - Strength: {strength}"
+        channels: ["dashboard", "log"]
+        
+      - name: "pattern_detected"
+        enabled: true
+        priority: "medium"
+        message: "Pattern detected: {pattern_type} on {symbol} - Confidence: {confidence}%"
+        channels: ["dashboard", "log"]
+  
+  # Strategy alerts
+  strategy_alerts:
+    enabled: true
+    priority: "medium"
+    
+    alerts:
+      - name: "strategy_activated"
+        enabled: true
+        priority: "medium"
+        message: "Strategy activated: {strategy_name} for {symbol}"
+        channels: ["dashboard", "log"]
+        
+      - name: "strategy_deactivated"
+        enabled: true
+        priority: "medium"
+        message: "Strategy deactivated: {strategy_name} for {symbol} - Reason: {reason}"
+        channels: ["dashboard", "log"]
+        
+      - name: "strategy_performance"
+        enabled: true
+        priority: "low"
+        frequency: "daily"
+        message: "Strategy performance: {strategy_name} - Win rate: {win_rate}%"
+        channels: ["dashboard", "email"]
+
+# ==================== PORTFOLIO ALERTS ====================
+portfolio_alerts:
+  # Portfolio performance alerts
+  performance:
+    enabled: true
+    priority: "medium"
+    
+    alerts:
+      - name: "daily_pnl"
+        enabled: true
+        priority: "medium"
+        frequency: "daily"
+        time: "16:30"  # After market close
+        message: "Daily P&L: {pnl_amount} ({pnl_percentage}%)"
+        channels: ["dashboard", "email"]
+        
+      - name: "weekly_performance"
+        enabled: true
+        priority: "low"
+        frequency: "weekly"
+        day: "Friday"
+        time: "17:00"
+        message: "Weekly performance: {performance}% - Portfolio value: {portfolio_value}"
+        channels: ["dashboard", "email"]
+        
+      - name: "monthly_summary"
+        enabled: true
+        priority: "low"
+        frequency: "monthly"
+        day: "last"
+        time: "18:00"
+        message: "Monthly summary: Return: {return}%, Sharpe: {sharpe}, Max DD: {max_drawdown}%"
+        channels: ["dashboard", "email"]
+  
+  # Position alerts
+  positions:
+    enabled: true
+    priority: "medium"
+    
+    alerts:
+      - name: "large_position"
+        enabled: true
+        priority: "medium"
+        threshold: 0.08  # 8% of portfolio
+        message: "Large position alert: {symbol} represents {percentage}% of portfolio"
+        channels: ["dashboard", "log"]
+        
+      - name: "position_limit_exceeded"
+        enabled: true
+        priority: "high"
+        message: "Position limit exceeded: {symbol} - {current_size} > {limit}"
+        channels: ["dashboard", "email", "mobile"]
+        
+      - name: "concentration_risk"
+        enabled: true
+        priority: "high"
+        threshold: 0.25  # 25% in correlated positions
+        message: "Concentration risk: {percentage}% in correlated positions"
+        channels: ["dashboard", "email"]
+  
+  # Balance alerts
+  balance:
+    enabled: true
+    priority: "high"
+    
+    alerts:
+      - name: "low_cash_balance"
+        enabled: true
+        priority: "medium"
+        threshold: 0.02  # 2% cash remaining
+        message: "Low cash balance: {cash_amount} ({percentage}% of portfolio)"
+        channels: ["dashboard", "email"]
+        
+      - name: "margin_call"
+        enabled: true
+        priority: "critical"
+        message: "MARGIN CALL: Margin requirement: {required}, Available: {available}"
+        channels: ["dashboard", "email", "mobile", "sms"]
+
+# ==================== RISK MANAGEMENT ALERTS ====================
+risk_alerts:
+  # Drawdown alerts
+  drawdown:
+    enabled: true
+    priority: "high"
+    
+    alerts:
+      - name: "daily_drawdown_warning"
+        enabled: true
+        priority: "medium"
+        threshold: -0.03  # -3% daily drawdown
+        message: "Daily drawdown warning: {drawdown}%"
+        channels: ["dashboard", "email"]
+        
+      - name: "daily_drawdown_critical"
+        enabled: true
+        priority: "critical"
+        threshold: -0.05  # -5% daily drawdown
+        message: "CRITICAL: Daily drawdown {drawdown}% - Risk controls activated"
+        channels: ["dashboard", "email", "mobile", "discord"]
+        
+      - name: "monthly_drawdown"
+        enabled: true
+        priority: "high"
+        threshold: -0.10  # -10% monthly drawdown
+        message: "Monthly drawdown alert: {drawdown}% - Review required"
+        channels: ["dashboard", "email"]
+  
+  # Volatility alerts
+  volatility:
+    enabled: true
+    priority: "medium"
+    
+    alerts:
+      - name: "high_portfolio_volatility"
+        enabled: true
+        priority: "medium"
+        threshold: 0.30  # 30% annualized volatility
+        message: "High portfolio volatility: {volatility}% - Consider risk reduction"
+        channels: ["dashboard", "log"]
+        
+      - name: "volatility_spike"
+        enabled: true
+        priority: "high"
+        spike_threshold: 2.0  # 2x normal volatility
+        message: "Volatility spike detected: {symbol} - {current_vol}% vs {normal_vol}%"
+        channels: ["dashboard", "email"]
+  
+  # Stop loss alerts
+  stop_loss:
+    enabled: true
+    priority: "high"
+    
+    alerts:
+      - name: "stop_loss_triggered"
+        enabled: true
+        priority: "high"
+        message: "Stop loss triggered: {symbol} - Loss: {loss_amount} ({loss_percentage}%)"
+        channels: ["dashboard", "email", "mobile"]
+        
+      - name: "approaching_stop_loss"
+        enabled: true
+        priority: "medium"
+        threshold: 0.8  # 80% of the way to stop loss
+        message: "Approaching stop loss: {symbol} - {distance_to_stop}% away"
+        channels: ["dashboard", "log"]
+  
+  # Correlation alerts
+  correlation:
+    enabled: true
+    priority: "medium"
+    
+    alerts:
+      - name: "high_correlation"
+        enabled: true
+        priority: "medium"
+        threshold: 0.8  # 80% correlation
+        message: "High correlation detected: {asset1} and {asset2} - {correlation}%"
+        channels: ["dashboard", "log"]
+        
+      - name: "correlation_breakdown"
+        enabled: true
+        priority: "high"
+        change_threshold: 0.3  # 30% change in correlation
+        message: "Correlation breakdown: {asset1}/{asset2} changed by {change}%"
+        channels: ["dashboard", "email"]
+
+# ==================== MARKET ALERTS ====================
+market_alerts:
+  # Market condition alerts
+  market_conditions:
+    enabled: true
+    priority: "medium"
+    
+    alerts:
+      - name: "market_regime_change"
+        enabled: true
+        priority: "high"
+        message: "Market regime change: {old_regime} → {new_regime} - Confidence: {confidence}%"
+        channels: ["dashboard", "email", "discord"]
+        
+      - name: "high_vix"
+        enabled: true
+        priority: "medium"
+        threshold: 30  # VIX > 30
+        message: "High volatility environment: VIX = {vix_level}"
+        channels: ["dashboard", "log"]
+        
+      - name: "market_crash"
+        enabled: true
+        priority: "critical"
+        threshold: -0.05  # -5% market decline
+        message: "MARKET CRASH ALERT: {index} down {decline}% - Emergency protocols activated"
+        channels: ["dashboard", "email", "mobile", "discord", "sms"]
+  
+  # Economic alerts
+  economic:
+    enabled: false  # Disabled until economic calendar API configured
+    priority: "low"
+    
+    alerts:
+      - name: "high_impact_news"
+        enabled: false
+        priority: "medium"
+        message: "High impact economic event: {event} at {time}"
+        channels: ["dashboard", "email"]
+        
+      - name: "earnings_announcement"
+        enabled: false
+        priority: "low"
+        advance_notice_hours: 24
+        message: "Earnings announcement: {symbol} in {hours} hours"
+        channels: ["dashboard", "log"]
+  
+  # Crypto-specific alerts
+  crypto_market:
+    enabled: true
+    priority: "medium"
+    
+    alerts:
+      - name: "crypto_pump"
+        enabled: true
+        priority: "medium"
+        threshold: 0.20  # 20% increase
+        timeframe: "1h"
+        message: "Crypto pump detected: {symbol} +{percentage}% in {timeframe}"
+        channels: ["dashboard", "discord"]
+        
+      - name: "crypto_dump"
+        enabled: true
+        priority: "medium"
+        threshold: -0.20  # -20% decrease
+        timeframe: "1h"
+        message: "Crypto dump detected: {symbol} {percentage}% in {timeframe}"
+        channels: ["dashboard", "discord"]
+        
+      - name: "whale_movement"
+        enabled: false  # Disabled until on-chain data available
+        priority: "low"
+        message: "Large transaction detected: {amount} {symbol}"
+        channels: ["dashboard", "log"]
+
+# ==================== SYSTEM ALERTS ====================
+system_alerts:
+  # Performance alerts
+  performance:
+    enabled: true
+    priority: "high"
+    
+    alerts:
+      - name: "slow_algorithm"
+        enabled: true
+        priority: "medium"
+        threshold_ms: 100  # Slower than 100ms
+        message: "Algorithm performance degraded: {component} taking {time}ms"
+        channels: ["dashboard", "log"]
+        
+      - name: "high_memory_usage"
+        enabled: true
+        priority: "high"
+        threshold: 0.85  # 85% memory usage
+        message: "High memory usage: {usage}% - {available} available"
+        channels: ["dashboard", "email"]
+        
+      - name: "high_cpu_usage"
+        enabled: true
+        priority: "medium"
+        threshold: 0.80  # 80% CPU usage
+        message: "High CPU usage: {usage}% for {duration} seconds"
+        channels: ["dashboard", "log"]
+  
+  # Connection alerts
+  connectivity:
+    enabled: true
+    priority: "high"
+    
+    alerts:
+      - name: "data_feed_disconnected"
+        enabled: true
+        priority: "critical"
+        message: "Data feed disconnected: {provider} - {duration} seconds"
+        channels: ["dashboard", "email", "mobile"]
+        
+      - name: "broker_connection_lost"
+        enabled: true
+        priority: "critical"
+        message: "Broker connection lost: {broker} - Trading halted"
+        channels: ["dashboard", "email", "mobile", "sms"]
+        
+      - name: "api_rate_limit"
+        enabled: true
+        priority: "medium"
+        message: "API rate limit reached: {api_provider} - {reset_time}"
+        channels: ["dashboard", "log"]
+  
+  # Error alerts
+  errors:
+    enabled: true
+    priority: "high"
+    
+    alerts:
+      - name: "critical_error"
+        enabled: true
+        priority: "critical"
+        message: "Critical system error: {error_type} in {component} - {message}"
+        channels: ["dashboard", "email", "mobile"]
+        
+      - name: "database_error"
+        enabled: true
+        priority: "high"
+        message: "Database error: {error_message}"
+        channels: ["dashboard", "email"]
+        
+      - name: "algorithm_failure"
+        enabled: true
+        priority: "critical"
+        message: "Algorithm failure: {algorithm} - Falling back to {backup}"
+        channels: ["dashboard", "email", "mobile"]
+
+# ==================== NOTIFICATION CHANNELS ====================
+notification_channels:
+  # Dashboard notifications (always enabled)
+  dashboard:
+    enabled: true
+    priority_filter: "all"  # all, high, critical
+    display_duration_seconds: 10
+    max_notifications: 50
+    auto_dismiss: true
+    sound_enabled: false
+    
+  # Email notifications
+  email:
+    enabled: false  # Disabled until SMTP configured
+    smtp_server: ""
+    smtp_port: 587
+    username: ""
+    password: ""
+    from_address: "alerts@neurocluster-elite.com"
+    to_addresses: []
+    priority_filter: "medium"  # medium, high, critical
+    
+    # Email templates
+    templates:
+      critical: "critical_alert_template.html"
+      high: "high_alert_template.html"
+      medium: "medium_alert_template.html"
+    
+    # Email settings
+    rate_limit_per_hour: 20
+    batch_alerts: true
+    batch_interval_minutes: 15
+    html_format: true
+    
+  # Mobile push notifications
+  mobile:
+    enabled: false  # Disabled until mobile app configured
+    priority_filter: "high"  # high, critical
+    rate_limit_per_hour: 10
+    quiet_hours:
+      start: "22:00"
+      end: "06:00"
+      timezone: "UTC"
+    
+  # Discord notifications
+  discord:
+    enabled: false  # Disabled until webhook configured
+    webhook_url: ""
+    username: "NeuroCluster Elite"
+    priority_filter: "medium"
+    rate_limit_per_hour: 30
+    
+    # Discord formatting
+    use_embeds: true
+    color_coding:
+      critical: 0xff0000  # Red
+      high: 0xff8000      # Orange
+      medium: 0xffff00    # Yellow
+      low: 0x00ff00       # Green
+      info: 0x0080ff      # Blue
+    
+  # Telegram notifications
+  telegram:
+    enabled: false  # Disabled until bot configured
+    bot_token: ""
+    chat_id: ""
+    priority_filter: "high"
+    rate_limit_per_hour: 20
+    
+  # Slack notifications
+  slack:
+    enabled: false  # Disabled until webhook configured
+    webhook_url: ""
+    channel: "#trading-alerts"
+    username: "NeuroCluster Elite"
+    priority_filter: "medium"
+    rate_limit_per_hour: 30
+    
+  # SMS notifications (critical only)
+  sms:
+    enabled: false  # Disabled until SMS service configured
+    provider: "twilio"  # twilio, aws_sns
+    api_key: ""
+    phone_numbers: []
+    priority_filter: "critical"
+    rate_limit_per_hour: 5
+    
+  # Log file notifications
+  log:
+    enabled: true
+    log_file: "logs/alerts.log"
+    priority_filter: "all"
+    max_file_size_mb: 100
+    backup_count: 5
+    format: "{timestamp} [{priority}] {category}: {message}"
+
+# ==================== ALERT TEMPLATES ====================
+alert_templates:
+  # Template variables available: {symbol}, {price}, {percentage}, {amount}, 
+  # {timestamp}, {confidence}, {strategy}, {reason}, etc.
+  
+  trading:
+    trade_executed: "✅ Trade executed: {side} {quantity} {symbol} @ ${price}"
+    trade_failed: "❌ Trade failed: {symbol} - {reason}"
+    signal_generated: "📊 {signal_type} signal: {symbol} (Confidence: {confidence}%)"
+    
+  portfolio:
+    daily_summary: "📈 Daily Summary: P&L ${pnl_amount} ({pnl_percentage}%) | Portfolio: ${portfolio_value}"
+    position_alert: "⚠️ Position Alert: {symbol} now {percentage}% of portfolio"
+    
+  risk:
+    drawdown_warning: "⚠️ Drawdown Alert: Portfolio down {percentage}% today"
+    stop_loss_hit: "🛑 Stop Loss: {symbol} @ ${price} | Loss: ${loss_amount}"
+    
+  market:
+    regime_change: "🔄 Market Regime: {old_regime} → {new_regime}"
+    volatility_spike: "📈 Volatility Spike: {symbol} volatility now {percentage}%"
+    
+  system:
+    performance_issue: "⚠️ Performance: {component} slow ({time}ms)"
+    connection_lost: "🔌 Connection Lost: {provider}"
+    error_occurred: "❌ Error: {error_message}"
+
+# ==================== ALERT ESCALATION ====================
+alert_escalation:
+  # Escalation rules
+  enabled: true
+  
+  escalation_rules:
+    - name: "critical_unacknowledged"
+      condition: "priority == 'critical' AND acknowledged == false"
+      escalation_delay_minutes: 5
+      escalation_channels: ["mobile", "sms", "email"]
+      
+    - name: "repeated_high_priority"
+      condition: "priority == 'high' AND count > 3"
+      escalation_delay_minutes: 15
+      escalation_channels: ["email"]
+      
+    - name: "system_down"
+      condition: "category == 'system' AND severity == 'critical'"
+      escalation_delay_minutes: 2
+      escalation_channels: ["mobile", "sms", "email", "discord"]
+  
+  # Escalation contacts
+  escalation_contacts:
+    level_1: ["portfolio_manager@example.com"]
+    level_2: ["risk_manager@example.com", "portfolio_manager@example.com"]
+    level_3: ["cio@example.com", "ceo@example.com"]
+
+# ==================== ALERT TESTING ====================
+alert_testing:
+  # Test mode settings
+  test_mode: false
+  test_channels: ["dashboard", "log"]
+  test_frequency: "daily"
+  test_time: "09:00"
+  
+  # Test alerts
+  test_alerts:
+    - name: "daily_test"
+      message: "Daily alert test - System operational"
+      priority: "info"
+      channels: ["dashboard", "log"]
+      
+    - name: "weekly_connectivity_test"
+      message: "Weekly connectivity test"
+      priority: "low"
+      frequency: "weekly"
+      channels: ["email"]
+
+# ==================== ALERT ANALYTICS ====================
+alert_analytics:
+  # Analytics settings
+  enabled: true
+  retention_days: 90
+  
+  # Metrics to track
+  metrics:
+    - "alerts_sent_by_category"
+    - "alerts_sent_by_priority"
+    - "alerts_sent_by_channel"
+    - "alert_response_times"
+    - "false_positive_rate"
+    - "escalation_frequency"
+  
+  # Reporting
+  daily_report: false
+  weekly_report: true
+  monthly_report: true
+  
+  # Alert optimization
+  auto_tune_thresholds: false  # Disabled for manual control
+  machine_learning_optimization: false
+
+# ==================== DEVELOPMENT SETTINGS ====================
+development:
+  # Development mode
+  debug_alerts: true
+  test_all_channels: false
+  mock_external_services: true
+  
+  # Alert simulation
+  simulate_alerts: false
+  simulation_frequency: "hourly"
+  simulation_categories: ["trading", "portfolio", "market"]
+  
+  # Development notifications
+  dev_notifications: true
+  dev_email: "dev@neurocluster-elite.com"
+  dev_channels: ["dashboard", "log"]

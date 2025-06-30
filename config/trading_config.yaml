@@ -1,0 +1,500 @@
+# File: trading_config.yaml
+# Path: NeuroCluster-Elite/config/trading_config.yaml
+# Description: Trading-specific configuration for NeuroCluster Elite
+#
+# This configuration file contains all trading-related settings including
+# strategies, execution parameters, portfolio management, and trading rules.
+#
+# Author: Your Name
+# Created: 2025-06-29
+# Version: 1.0.0
+# License: MIT
+
+# ==================== TRADING ENGINE CONFIGURATION ====================
+trading_engine:
+  # Engine settings
+  mode: "paper"  # paper, live, backtest
+  auto_trading: false  # Manual approval required initially
+  max_concurrent_trades: 20
+  trade_frequency_limit: 100  # Max trades per day
+  
+  # Execution settings
+  execution_delay_ms: 100  # Minimum delay between orders
+  order_retry_attempts: 3
+  order_retry_delay: 1000  # milliseconds
+  partial_fill_handling: "accept"  # accept, cancel, modify
+  
+  # Market hours
+  respect_market_hours: true
+  trading_sessions:
+    - name: "US_REGULAR"
+      start: "09:30"
+      end: "16:00"
+      timezone: "America/New_York"
+      days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+    - name: "CRYPTO_24_7"
+      start: "00:00"
+      end: "23:59"
+      timezone: "UTC"
+      days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
+# ==================== STRATEGY CONFIGURATION ====================
+strategies:
+  # Strategy selection
+  auto_strategy_selection: true
+  strategy_confidence_threshold: 0.6
+  min_signal_strength: 0.5
+  max_strategies_per_symbol: 3
+  
+  # Strategy weights by regime
+  regime_strategy_weights:
+    bull:
+      bull_strategy: 0.4
+      momentum_strategy: 0.3
+      breakout_strategy: 0.2
+      crypto_momentum: 0.1
+    bear:
+      bear_strategy: 0.5
+      volatility_strategy: 0.3
+      range_strategy: 0.2
+    sideways:
+      range_strategy: 0.4
+      volatility_strategy: 0.3
+      mean_reversion: 0.3
+    volatile:
+      volatility_strategy: 0.4
+      crypto_volatility: 0.3
+      momentum_strategy: 0.3
+    breakout:
+      breakout_strategy: 0.5
+      momentum_strategy: 0.3
+      crypto_momentum: 0.2
+    breakdown:
+      bear_strategy: 0.4
+      volatility_strategy: 0.3
+      range_strategy: 0.3
+  
+  # Asset-specific strategy preferences
+  asset_strategy_preferences:
+    stocks:
+      preferred: ["bull_strategy", "bear_strategy", "momentum_strategy", "range_strategy"]
+      avoided: ["crypto_momentum", "crypto_volatility"]
+      confidence_multiplier: 1.0
+    crypto:
+      preferred: ["crypto_momentum", "crypto_volatility", "crypto_sentiment", "volatility_strategy"]
+      avoided: []
+      confidence_multiplier: 0.9  # Slightly lower confidence for crypto
+    forex:
+      preferred: ["momentum_strategy", "range_strategy", "volatility_strategy"]
+      avoided: ["crypto_momentum", "crypto_volatility"]
+      confidence_multiplier: 1.1
+    commodities:
+      preferred: ["momentum_strategy", "volatility_strategy", "range_strategy"]
+      avoided: ["crypto_momentum", "crypto_volatility"]
+      confidence_multiplier: 1.0
+
+# ==================== POSITION SIZING CONFIGURATION ====================
+position_sizing:
+  # Default sizing method
+  default_method: "kelly"  # fixed, percentage, kelly, volatility_adjusted, market_cap_weighted
+  
+  # Fixed sizing
+  fixed_size: 1000.0  # Fixed dollar amount per trade
+  
+  # Percentage sizing
+  percentage_of_portfolio: 0.05  # 5% of portfolio per trade
+  
+  # Kelly criterion
+  kelly:
+    enabled: true
+    max_kelly_fraction: 0.25  # Cap Kelly at 25%
+    min_kelly_fraction: 0.01  # Minimum 1%
+    lookback_periods: 50
+    confidence_adjustment: true
+  
+  # Volatility-adjusted sizing
+  volatility_adjusted:
+    base_position_size: 0.05  # 5% base size
+    volatility_lookback: 20
+    volatility_target: 0.20  # 20% annualized volatility target
+    max_volatility_adjustment: 3.0  # Max 3x adjustment
+  
+  # Market cap weighted (for stocks)
+  market_cap_weighted:
+    large_cap_multiplier: 1.2    # >$10B market cap
+    mid_cap_multiplier: 1.0      # $2B-$10B market cap
+    small_cap_multiplier: 0.8    # <$2B market cap
+  
+  # Asset-specific position sizing
+  asset_position_limits:
+    stocks:
+      max_position_size: 0.10     # 10% max per stock
+      min_position_size: 0.005    # 0.5% min per stock
+      concentration_limit: 0.25   # 25% max in single stock
+    crypto:
+      max_position_size: 0.08     # 8% max per crypto (higher volatility)
+      min_position_size: 0.01     # 1% min per crypto
+      concentration_limit: 0.20   # 20% max in single crypto
+    forex:
+      max_position_size: 0.15     # 15% max per pair (leverage available)
+      min_position_size: 0.01     # 1% min per pair
+      concentration_limit: 0.30   # 30% max in single pair
+    commodities:
+      max_position_size: 0.12     # 12% max per commodity
+      min_position_size: 0.01     # 1% min per commodity
+      concentration_limit: 0.25   # 25% max in single commodity
+
+# ==================== ORDER MANAGEMENT CONFIGURATION ====================
+order_management:
+  # Order types
+  default_order_type: "market"  # market, limit, stop, stop_limit
+  limit_order_buffer: 0.001     # 0.1% buffer for limit orders
+  
+  # Order timeouts
+  market_order_timeout: 30      # seconds
+  limit_order_timeout: 300      # seconds
+  stop_order_timeout: 86400     # 24 hours
+  
+  # Order validation
+  validate_orders: true
+  check_buying_power: true
+  check_position_limits: true
+  check_risk_limits: true
+  
+  # Slippage protection
+  max_slippage: 0.005          # 0.5% max slippage
+  slippage_protection: true
+  slippage_monitoring: true
+  
+  # Partial fills
+  min_fill_percentage: 0.10    # Accept partial fills >10%
+  partial_fill_timeout: 60     # seconds
+  
+  # Order routing (for multiple exchanges/brokers)
+  smart_order_routing: true
+  routing_algorithm: "best_price"  # best_price, best_speed, cost_effective
+  
+  # Special order handling
+  iceberg_orders: false
+  twap_orders: false           # Time-weighted average price
+  vwap_orders: false           # Volume-weighted average price
+
+# ==================== STOP LOSS AND TAKE PROFIT CONFIGURATION ====================
+stop_loss:
+  # Global stop loss settings
+  enabled: true
+  default_stop_loss_pct: 0.02  # 2% stop loss
+  
+  # Stop loss methods
+  methods:
+    fixed_percentage:
+      enabled: true
+      percentage: 0.02           # 2%
+    atr_based:
+      enabled: true
+      atr_multiplier: 2.0
+      atr_periods: 14
+    volatility_adjusted:
+      enabled: true
+      volatility_multiplier: 1.5
+      min_stop_loss: 0.01        # 1% minimum
+      max_stop_loss: 0.05        # 5% maximum
+    support_resistance:
+      enabled: true
+      buffer: 0.005              # 0.5% buffer below support
+  
+  # Trailing stops
+  trailing_stops:
+    enabled: true
+    default_trail_amount: 0.01   # 1% trailing amount
+    trail_activation: 0.02       # Start trailing after 2% profit
+  
+  # Asset-specific stops
+  asset_stop_settings:
+    stocks:
+      default_stop_pct: 0.02     # 2%
+      use_atr: true
+      atr_multiplier: 2.0
+    crypto:
+      default_stop_pct: 0.05     # 5% (higher volatility)
+      use_atr: true
+      atr_multiplier: 2.5
+    forex:
+      default_stop_pct: 0.015    # 1.5%
+      use_atr: true
+      atr_multiplier: 1.5
+    commodities:
+      default_stop_pct: 0.025    # 2.5%
+      use_atr: true
+      atr_multiplier: 2.2
+
+take_profit:
+  # Global take profit settings
+  enabled: true
+  default_take_profit_pct: 0.04  # 4% take profit (2:1 risk/reward)
+  
+  # Take profit methods
+  methods:
+    fixed_percentage:
+      enabled: true
+      percentage: 0.04           # 4%
+    risk_reward_ratio:
+      enabled: true
+      ratio: 2.0                 # 2:1 reward:risk
+    resistance_based:
+      enabled: true
+      buffer: 0.005              # 0.5% buffer before resistance
+    fibonacci_targets:
+      enabled: true
+      levels: [0.382, 0.618, 1.0, 1.618]
+  
+  # Partial profit taking
+  partial_profits:
+    enabled: true
+    levels:
+      - profit_pct: 0.02        # Take 25% profit at 2%
+        quantity_pct: 0.25
+      - profit_pct: 0.04        # Take 50% profit at 4%
+        quantity_pct: 0.50
+      - profit_pct: 0.08        # Take remaining at 8%
+        quantity_pct: 1.00
+
+# ==================== PORTFOLIO REBALANCING ====================
+rebalancing:
+  # Rebalancing schedule
+  enabled: true
+  frequency: "weekly"          # daily, weekly, monthly, quarterly
+  specific_day: "Monday"       # For weekly rebalancing
+  specific_time: "16:00"       # Market close
+  
+  # Rebalancing triggers
+  drift_threshold: 0.05        # 5% drift from target allocation
+  minimum_rebalance_amount: 100  # Minimum $100 to rebalance
+  
+  # Rebalancing methods
+  method: "threshold"          # threshold, time_based, both
+  cash_buffer: 0.05           # Keep 5% cash buffer
+  
+  # Asset allocation targets
+  target_allocations:
+    stocks: 0.60               # 60% stocks
+    crypto: 0.20               # 20% crypto
+    forex: 0.10                # 10% forex
+    commodities: 0.05          # 5% commodities
+    cash: 0.05                 # 5% cash
+  
+  # Allocation ranges
+  allocation_ranges:
+    stocks: [0.50, 0.70]       # 50-70% range
+    crypto: [0.10, 0.30]       # 10-30% range
+    forex: [0.05, 0.15]        # 5-15% range
+    commodities: [0.00, 0.10]  # 0-10% range
+    cash: [0.00, 0.15]         # 0-15% range
+
+# ==================== TRADING RULES AND FILTERS ====================
+trading_rules:
+  # Signal filters
+  minimum_confidence: 0.6
+  minimum_volume: 100000       # Minimum daily volume for stocks
+  minimum_market_cap: 1000000000  # $1B minimum market cap for stocks
+  
+  # Correlation limits
+  max_correlation: 0.7         # Maximum correlation between positions
+  correlation_window: 30       # Days for correlation calculation
+  
+  # Concentration limits
+  max_single_position: 0.10    # 10% max in single position
+  max_sector_concentration: 0.25  # 25% max in single sector
+  max_asset_class: 0.70        # 70% max in single asset class
+  
+  # Time-based rules
+  no_trading_windows:
+    - name: "earnings_blackout"
+      description: "No trading 2 days before earnings"
+      days_before_earnings: 2
+    - name: "fomc_blackout"
+      description: "No trading during FOMC meetings"
+      hours_before_fomc: 2
+      hours_after_fomc: 1
+  
+  # News-based filters
+  avoid_trading_on_news: true
+  news_sentiment_threshold: -0.5  # Avoid if sentiment < -0.5
+  
+  # Technical filters
+  rsi_overbought_threshold: 80
+  rsi_oversold_threshold: 20
+  avoid_trading_overbought: false  # Allow overbought trading
+  avoid_trading_oversold: false    # Allow oversold trading
+
+# ==================== BACKTESTING CONFIGURATION ====================
+backtesting:
+  # Backtest settings
+  default_start_date: "2022-01-01"
+  default_end_date: "2024-12-31"
+  initial_capital: 100000
+  
+  # Costs and fees
+  commission_per_trade: 0.0    # $0 commission (modern brokers)
+  commission_percentage: 0.0   # 0% commission
+  slippage_model: "linear"     # linear, square_root, constant
+  slippage_basis_points: 5     # 0.05% slippage
+  
+  # Market impact
+  market_impact_model: "sqrt"  # sqrt, linear, none
+  market_impact_coefficient: 0.1
+  
+  # Benchmark
+  benchmark_symbol: "SPY"
+  benchmark_asset_type: "stock"
+  
+  # Performance metrics
+  calculate_metrics:
+    - "total_return"
+    - "annualized_return"
+    - "volatility"
+    - "sharpe_ratio"
+    - "max_drawdown"
+    - "calmar_ratio"
+    - "win_rate"
+    - "profit_factor"
+    - "average_trade"
+
+# ==================== PAPER TRADING CONFIGURATION ====================
+paper_trading:
+  # Paper trading settings
+  enabled: true
+  initial_capital: 100000
+  realistic_execution: true
+  
+  # Simulated costs
+  simulate_commissions: true
+  simulate_slippage: true
+  simulate_market_impact: true
+  
+  # Execution simulation
+  fill_probability: 0.95       # 95% fill rate
+  partial_fill_probability: 0.1  # 10% partial fill rate
+  execution_delay_range: [100, 500]  # 100-500ms delay
+  
+  # Market data simulation
+  use_real_market_data: true
+  add_noise_to_fills: true
+  noise_std_dev: 0.0001       # 0.01% noise
+
+# ==================== LIVE TRADING CONFIGURATION ====================
+live_trading:
+  # Live trading settings (DISABLED BY DEFAULT)
+  enabled: false
+  require_manual_approval: true
+  max_daily_loss: 0.02        # 2% max daily loss
+  max_weekly_loss: 0.05       # 5% max weekly loss
+  
+  # Safety mechanisms
+  circuit_breakers:
+    enabled: true
+    daily_loss_limit: 0.02    # Stop trading at 2% daily loss
+    position_size_limit: 0.10 # Max 10% position size
+    velocity_limit: 10        # Max 10 trades per hour
+  
+  # Monitoring and alerts
+  real_time_monitoring: true
+  alert_on_large_moves: true
+  alert_threshold: 0.05       # Alert on 5% moves
+  
+  # Reconciliation
+  position_reconciliation: true
+  reconciliation_frequency: 300  # Every 5 minutes
+  max_position_discrepancy: 0.01  # 1% max discrepancy
+
+# ==================== STRATEGY-SPECIFIC CONFIGURATIONS ====================
+strategy_configs:
+  # Bull market strategy
+  bull_strategy:
+    momentum_threshold: 0.05
+    trend_confirmation_periods: 3
+    rsi_threshold: 30
+    
+  # Bear market strategy
+  bear_strategy:
+    decline_threshold: -0.05
+    short_selling_enabled: false  # Disabled for safety
+    defensive_assets: ["GLD", "TLT", "VIX"]
+  
+  # Volatility strategy
+  volatility_strategy:
+    volatility_threshold: 30
+    breakout_threshold: 2.0
+    mean_reversion_threshold: 0.8
+  
+  # Crypto strategies
+  crypto_momentum:
+    sentiment_weight: 0.3
+    volatility_adjustment: 1.5
+    social_sentiment_enabled: true
+  
+  crypto_volatility:
+    extreme_volatility_threshold: 80
+    volatility_breakout_multiplier: 2.5
+    mean_reversion_enabled: true
+
+# ==================== PERFORMANCE OPTIMIZATION ====================
+performance:
+  # Execution optimization
+  batch_orders: true
+  order_batching_delay: 100    # milliseconds
+  max_batch_size: 10
+  
+  # Calculation optimization
+  cache_technical_indicators: true
+  cache_ttl: 300              # 5 minutes
+  parallel_strategy_evaluation: true
+  max_worker_threads: 4
+  
+  # Memory optimization
+  max_historical_data_points: 1000
+  data_compression: true
+  lazy_loading: true
+
+# ==================== COMPLIANCE AND REPORTING ====================
+compliance:
+  # Regulatory compliance
+  pattern_day_trader_protection: true
+  wash_sale_tracking: true
+  mark_to_market_accounting: false
+  
+  # Reporting
+  generate_trade_reports: true
+  report_frequency: "daily"
+  report_format: ["json", "csv"]
+  
+  # Audit trail
+  maintain_audit_trail: true
+  audit_retention_days: 2555  # 7 years
+  
+  # Tax reporting
+  tax_lot_accounting: "fifo"  # fifo, lifo, specific_id
+  wash_sale_adjustments: true
+  generate_tax_reports: true
+
+# ==================== EMERGENCY PROCEDURES ====================
+emergency:
+  # Emergency stops
+  emergency_stop_enabled: true
+  emergency_stop_triggers:
+    - "portfolio_loss_5_percent"
+    - "single_position_loss_20_percent"
+    - "market_crash_detection"
+    - "system_error"
+  
+  # Emergency actions
+  emergency_actions:
+    - "stop_new_orders"
+    - "close_all_positions"
+    - "send_alerts"
+    - "create_incident_report"
+  
+  # Recovery procedures
+  automatic_recovery: false
+  manual_approval_required: true
+  recovery_checklist_required: true

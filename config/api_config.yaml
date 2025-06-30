@@ -1,0 +1,613 @@
+# File: api_config.yaml
+# Path: NeuroCluster-Elite/config/api_config.yaml
+# Description: API configuration for NeuroCluster Elite Trading Platform
+#
+# This configuration file contains all API-related settings including
+# data provider APIs, broker APIs, notification APIs, and external service
+# integrations required for the trading platform.
+#
+# Author: Your Name
+# Created: 2025-06-29
+# Version: 1.0.0
+# License: MIT
+
+# ==================== API GENERAL SETTINGS ====================
+api_general:
+  # Base API settings
+  version: "v1"
+  base_url: "http://localhost:8000/api/v1"
+  timeout_seconds: 30
+  max_retries: 3
+  retry_delay_seconds: 1
+  
+  # Rate limiting
+  rate_limit_enabled: true
+  requests_per_minute: 1000
+  requests_per_hour: 10000
+  burst_limit: 100
+  
+  # Authentication
+  authentication_required: false  # Disabled for development
+  api_key_header: "X-API-Key"
+  bearer_token_header: "Authorization"
+  
+  # Request/Response settings
+  max_request_size_mb: 10
+  compression_enabled: true
+  cors_enabled: true
+  cors_origins: ["*"]
+  
+  # Logging and monitoring
+  request_logging: true
+  response_logging: false  # Disable to avoid sensitive data
+  performance_monitoring: true
+  error_tracking: true
+
+# ==================== MARKET DATA APIS ====================
+market_data_apis:
+  # Primary data providers
+  primary_providers:
+    stocks: "yfinance"
+    crypto: "ccxt"
+    forex: "alpha_vantage"
+    commodities: "yfinance"
+  
+  # YFinance API (Free stock data)
+  yfinance:
+    enabled: true
+    base_url: "https://query1.finance.yahoo.com"
+    rate_limit: 2000  # requests per hour
+    timeout: 10
+    symbols_per_request: 50
+    historical_data_limit: "2y"  # 2 years max
+    real_time_enabled: true
+    
+  # Alpha Vantage API
+  alpha_vantage:
+    enabled: false  # Disabled until API key provided
+    base_url: "https://www.alphavantage.co/query"
+    api_key: ""  # Set via environment variable ALPHA_VANTAGE_API_KEY
+    rate_limit: 5   # requests per minute (free tier)
+    timeout: 15
+    functions:
+      - "TIME_SERIES_INTRADAY"
+      - "TIME_SERIES_DAILY"
+      - "GLOBAL_QUOTE"
+      - "FX_INTRADAY"
+      - "FX_DAILY"
+    premium_features: false
+    
+  # Polygon.io API
+  polygon:
+    enabled: false  # Disabled until API key provided
+    base_url: "https://api.polygon.io"
+    api_key: ""  # Set via environment variable POLYGON_API_KEY
+    rate_limit: 5   # requests per minute (free tier)
+    timeout: 15
+    endpoints:
+      - "/v2/aggs/ticker"
+      - "/v3/reference/tickers"
+      - "/v2/snapshot/locale/us/markets/stocks/tickers"
+    
+  # Finnhub API
+  finnhub:
+    enabled: false  # Disabled until API key provided
+    base_url: "https://finnhub.io/api/v1"
+    api_key: ""  # Set via environment variable FINNHUB_API_KEY
+    rate_limit: 60  # requests per minute
+    timeout: 10
+    
+  # IEX Cloud API
+  iex_cloud:
+    enabled: false  # Disabled until API key provided
+    base_url: "https://cloud.iexapis.com/stable"
+    api_key: ""  # Set via environment variable IEX_CLOUD_API_KEY
+    version: "stable"
+    rate_limit: 100  # requests per second
+    timeout: 10
+
+# ==================== CRYPTOCURRENCY APIS ====================
+crypto_apis:
+  # CCXT (Unified crypto exchange API)
+  ccxt:
+    enabled: true
+    default_exchange: "binance"
+    sandbox_mode: true  # Use testnet/sandbox
+    rate_limit: 1200  # requests per minute
+    timeout: 30
+    
+    # Supported exchanges
+    exchanges:
+      binance:
+        enabled: true
+        api_key: ""  # Set via environment variable BINANCE_API_KEY
+        secret: ""   # Set via environment variable BINANCE_SECRET
+        sandbox: true
+        rate_limit: 1200
+        endpoints:
+          - "/api/v3/ticker/24hr"
+          - "/api/v3/klines"
+          - "/api/v3/depth"
+      
+      coinbase:
+        enabled: false  # Disabled until credentials provided
+        api_key: ""  # Set via environment variable COINBASE_API_KEY
+        secret: ""   # Set via environment variable COINBASE_SECRET
+        passphrase: ""  # Set via environment variable COINBASE_PASSPHRASE
+        sandbox: true
+        rate_limit: 10  # requests per second
+        
+      kraken:
+        enabled: false  # Disabled until credentials provided
+        api_key: ""  # Set via environment variable KRAKEN_API_KEY
+        secret: ""   # Set via environment variable KRAKEN_SECRET
+        rate_limit: 60  # requests per minute
+        
+      bitfinex:
+        enabled: false  # Disabled until credentials provided
+        api_key: ""  # Set via environment variable BITFINEX_API_KEY
+        secret: ""   # Set via environment variable BITFINEX_SECRET
+        rate_limit: 90  # requests per minute
+  
+  # CoinGecko API (Free crypto data)
+  coingecko:
+    enabled: true
+    base_url: "https://api.coingecko.com/api/v3"
+    rate_limit: 50  # requests per minute (free tier)
+    timeout: 15
+    endpoints:
+      - "/simple/price"
+      - "/coins/markets"
+      - "/coins/{id}/market_chart"
+      - "/global"
+    
+  # CoinMarketCap API
+  coinmarketcap:
+    enabled: false  # Disabled until API key provided
+    base_url: "https://pro-api.coinmarketcap.com"
+    api_key: ""  # Set via environment variable CMC_API_KEY
+    rate_limit: 333  # requests per day (free tier)
+    timeout: 15
+
+# ==================== NEWS AND SENTIMENT APIS ====================
+news_sentiment_apis:
+  # NewsAPI
+  newsapi:
+    enabled: false  # Disabled until API key provided
+    base_url: "https://newsapi.org/v2"
+    api_key: ""  # Set via environment variable NEWS_API_KEY
+    rate_limit: 1000  # requests per day (free tier)
+    timeout: 15
+    sources:
+      - "bloomberg"
+      - "reuters"
+      - "cnbc"
+      - "the-wall-street-journal"
+      - "financial-times"
+    categories:
+      - "business"
+      - "technology"
+    languages: ["en"]
+    
+  # Finnhub News
+  finnhub_news:
+    enabled: false  # Disabled until API key provided
+    base_url: "https://finnhub.io/api/v1"
+    api_key: ""  # Set via environment variable FINNHUB_API_KEY
+    rate_limit: 60  # requests per minute
+    timeout: 10
+    endpoints:
+      - "/news"
+      - "/company-news"
+      - "/news-sentiment"
+    
+  # Reddit API (Social sentiment)
+  reddit:
+    enabled: false  # Disabled until credentials provided
+    base_url: "https://oauth.reddit.com"
+    client_id: ""     # Set via environment variable REDDIT_CLIENT_ID
+    client_secret: "" # Set via environment variable REDDIT_CLIENT_SECRET
+    user_agent: "NeuroCluster-Elite/1.0"
+    rate_limit: 60    # requests per minute
+    timeout: 15
+    subreddits:
+      - "investing"
+      - "stocks"
+      - "cryptocurrency"
+      - "wallstreetbets"
+      - "SecurityAnalysis"
+    
+  # Twitter API (Now X API)
+  twitter:
+    enabled: false  # Disabled until credentials provided
+    base_url: "https://api.twitter.com/2"
+    bearer_token: ""  # Set via environment variable TWITTER_BEARER_TOKEN
+    api_key: ""       # Set via environment variable TWITTER_API_KEY
+    api_secret: ""    # Set via environment variable TWITTER_API_SECRET
+    rate_limit: 300   # requests per 15 minutes
+    timeout: 15
+
+# ==================== BROKER APIS ====================
+broker_apis:
+  # Note: All broker APIs are disabled by default for safety
+  # Enable and configure only when ready for live trading
+  
+  # Alpaca Trading API
+  alpaca:
+    enabled: false  # DISABLED - paper trading only when enabled
+    base_url: "https://paper-api.alpaca.markets"  # Paper trading URL
+    api_key: ""     # Set via environment variable ALPACA_API_KEY
+    secret_key: ""  # Set via environment variable ALPACA_SECRET_KEY
+    paper_trading: true
+    rate_limit: 200  # requests per minute
+    timeout: 30
+    endpoints:
+      - "/v2/account"
+      - "/v2/positions"
+      - "/v2/orders"
+      - "/v2/assets"
+    
+  # Interactive Brokers API
+  interactive_brokers:
+    enabled: false  # DISABLED - requires IB Gateway setup
+    base_url: "http://localhost:5000"  # IB Gateway default port
+    client_id: 1
+    paper_trading: true
+    timeout: 30
+    auto_connect: false
+    
+  # TD Ameritrade API
+  td_ameritrade:
+    enabled: false  # DISABLED - API being discontinued
+    base_url: "https://api.tdameritrade.com/v1"
+    client_id: ""   # Set via environment variable TD_CLIENT_ID
+    redirect_uri: "http://localhost:8000/callback"
+    paper_trading: true
+    rate_limit: 120  # requests per minute
+    timeout: 30
+    
+  # Paper Trading Simulator (Built-in)
+  paper_trading:
+    enabled: true   # ENABLED - safe paper trading
+    initial_capital: 100000
+    commission_per_trade: 0.0
+    realistic_execution: true
+    slippage_simulation: true
+    market_impact_simulation: false
+    fill_probability: 0.98
+
+# ==================== NOTIFICATION APIS ====================
+notification_apis:
+  # Email notifications
+  email:
+    enabled: false  # Disabled until SMTP configured
+    smtp_server: ""
+    smtp_port: 587
+    username: ""    # Set via environment variable EMAIL_USERNAME
+    password: ""    # Set via environment variable EMAIL_PASSWORD
+    use_tls: true
+    from_address: ""
+    rate_limit: 100  # emails per hour
+    
+  # Discord webhooks
+  discord:
+    enabled: false  # Disabled until webhook configured
+    webhook_url: ""  # Set via environment variable DISCORD_WEBHOOK_URL
+    username: "NeuroCluster Elite"
+    avatar_url: ""
+    rate_limit: 30   # requests per minute
+    timeout: 10
+    
+  # Telegram bot
+  telegram:
+    enabled: false  # Disabled until bot configured
+    bot_token: ""   # Set via environment variable TELEGRAM_BOT_TOKEN
+    chat_id: ""     # Set via environment variable TELEGRAM_CHAT_ID
+    rate_limit: 30  # requests per second
+    timeout: 10
+    
+  # Slack webhooks
+  slack:
+    enabled: false  # Disabled until webhook configured
+    webhook_url: ""  # Set via environment variable SLACK_WEBHOOK_URL
+    channel: "#trading"
+    username: "NeuroCluster Elite"
+    rate_limit: 60  # requests per minute
+    timeout: 10
+    
+  # Mobile push notifications
+  mobile_push:
+    enabled: false  # Disabled until configured
+    firebase_server_key: ""  # Set via environment variable FIREBASE_SERVER_KEY
+    rate_limit: 1000  # notifications per hour
+
+# ==================== EXTERNAL SERVICES ====================
+external_services:
+  # Economic calendar
+  economic_calendar:
+    enabled: false  # Disabled until API key provided
+    provider: "forexfactory"
+    api_key: ""
+    rate_limit: 60
+    timeout: 15
+    
+  # Weather API (for commodity trading)
+  weather:
+    enabled: false  # Disabled until API key provided
+    provider: "openweathermap"
+    api_key: ""  # Set via environment variable WEATHER_API_KEY
+    rate_limit: 1000  # requests per day
+    timeout: 10
+    
+  # VIX and fear/greed index
+  market_indicators:
+    enabled: true   # Using free sources
+    vix_source: "yahoo"
+    fear_greed_source: "cnn"  # CNN Fear & Greed Index
+    rate_limit: 60
+    timeout: 10
+
+# ==================== INTERNAL APIS ====================
+internal_apis:
+  # NeuroCluster Elite main API
+  neurocluster_api:
+    enabled: true
+    host: "0.0.0.0"
+    port: 8000
+    workers: 4
+    reload: true  # Development mode
+    log_level: "info"
+    
+    # API endpoints
+    endpoints:
+      # Core endpoints
+      - path: "/health"
+        methods: ["GET"]
+        auth_required: false
+      - path: "/api/v1/market-data/{symbols}"
+        methods: ["GET"]
+        auth_required: false
+      - path: "/api/v1/portfolio"
+        methods: ["GET", "POST"]
+        auth_required: false  # Disabled for development
+      - path: "/api/v1/strategies"
+        methods: ["GET", "POST"]
+        auth_required: false
+      - path: "/api/v1/patterns/{symbol}"
+        methods: ["GET"]
+        auth_required: false
+      - path: "/api/v1/signals"
+        methods: ["GET", "POST"]
+        auth_required: false
+      
+      # WebSocket endpoints
+      - path: "/ws/market-data"
+        type: "websocket"
+        auth_required: false
+      - path: "/ws/trading-signals"
+        type: "websocket"
+        auth_required: false
+      - path: "/ws/portfolio-updates"
+        type: "websocket"
+        auth_required: false
+    
+    # CORS settings
+    cors_origins: ["*"]
+    cors_methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    cors_headers: ["*"]
+    
+  # Streamlit dashboard API
+  streamlit_api:
+    enabled: true
+    host: "0.0.0.0"
+    port: 8501
+    base_url_path: ""
+    server_headless: false
+    browser_gather_usage_stats: false
+    
+  # Mobile API
+  mobile_api:
+    enabled: true
+    version: "v1"
+    base_path: "/mobile/v1"
+    rate_limit: 1000  # requests per hour per device
+    auth_required: false  # Disabled for development
+
+# ==================== API SECURITY ====================
+api_security:
+  # Authentication
+  authentication:
+    enabled: false  # Disabled for development
+    method: "jwt"   # jwt, api_key, oauth2
+    jwt_secret: "your-secret-key-change-in-production"
+    jwt_algorithm: "HS256"
+    jwt_expiry_hours: 24
+    
+  # API Keys
+  api_keys:
+    enabled: false  # Disabled for development
+    key_length: 32
+    key_prefix: "nce_"
+    rate_limit_per_key: 10000  # requests per hour
+    
+  # IP Restrictions
+  ip_restrictions:
+    enabled: false  # Disabled for development
+    whitelist: []
+    blacklist: []
+    
+  # Request validation
+  request_validation:
+    enabled: true
+    max_request_size: 10485760  # 10MB
+    validate_content_type: true
+    validate_user_agent: false
+    
+  # Rate limiting
+  rate_limiting:
+    enabled: true
+    redis_url: ""  # Use memory-based rate limiting if empty
+    global_limit: 10000  # requests per hour
+    per_ip_limit: 1000   # requests per hour per IP
+    
+  # Security headers
+  security_headers:
+    enabled: true
+    headers:
+      X-Content-Type-Options: "nosniff"
+      X-Frame-Options: "DENY"
+      X-XSS-Protection: "1; mode=block"
+      Strict-Transport-Security: "max-age=31536000; includeSubDomains"
+
+# ==================== API MONITORING ====================
+api_monitoring:
+  # Metrics collection
+  metrics_enabled: true
+  metrics_endpoint: "/metrics"
+  prometheus_enabled: false
+  
+  # Health checks
+  health_checks:
+    enabled: true
+    endpoint: "/health"
+    detailed_endpoint: "/health/detailed"
+    interval_seconds: 30
+    
+  # Performance monitoring
+  performance_monitoring:
+    enabled: true
+    slow_query_threshold_ms: 1000
+    log_slow_queries: true
+    track_response_times: true
+    
+  # Error tracking
+  error_tracking:
+    enabled: true
+    error_endpoint: "/errors"
+    track_4xx_errors: true
+    track_5xx_errors: true
+    alert_on_error_rate: false  # Disabled for development
+    
+  # Logging
+  api_logging:
+    enabled: true
+    log_requests: true
+    log_responses: false  # Disabled to avoid sensitive data
+    log_headers: false
+    log_body: false
+    max_log_size: 1000  # characters
+
+# ==================== API CACHING ====================
+api_caching:
+  # Cache settings
+  enabled: true
+  cache_type: "memory"  # memory, redis
+  default_ttl_seconds: 300  # 5 minutes
+  
+  # Redis cache (if using redis)
+  redis:
+    host: "localhost"
+    port: 6379
+    db: 1
+    password: ""
+    connection_pool_size: 10
+    
+  # Cache policies per endpoint
+  cache_policies:
+    "/api/v1/market-data": 60      # 1 minute
+    "/api/v1/portfolio": 30        # 30 seconds
+    "/api/v1/strategies": 300      # 5 minutes
+    "/api/v1/patterns": 600        # 10 minutes
+    "/health": 0                   # No cache
+    
+  # Cache invalidation
+  invalidation:
+    enabled: true
+    invalidate_on_update: true
+    invalidate_on_error: false
+
+# ==================== API BACKUP AND RECOVERY ====================
+api_backup:
+  # Configuration backup
+  config_backup:
+    enabled: true
+    backup_interval_hours: 24
+    backup_path: "backups/api_configs"
+    retention_days: 30
+    
+  # API logs backup
+  logs_backup:
+    enabled: true
+    backup_interval_hours: 6
+    backup_path: "backups/api_logs"
+    retention_days: 7
+    
+  # Database backup (API related data)
+  database_backup:
+    enabled: true
+    backup_interval_hours: 12
+    backup_path: "backups/api_database"
+    retention_days: 30
+
+# ==================== DEVELOPMENT SETTINGS ====================
+development:
+  # Development mode
+  debug_mode: true
+  auto_reload: true
+  log_level: "DEBUG"
+  
+  # Mock APIs
+  mock_apis:
+    enabled: true
+    mock_delay_ms: 100
+    mock_error_rate: 0.01  # 1% error rate for testing
+    
+  # Testing
+  test_mode: false
+  test_endpoints: true
+  api_documentation: true
+  swagger_ui: true
+  
+  # Development tools
+  api_explorer: true
+  request_inspector: true
+  response_inspector: true
+
+# ==================== PRODUCTION OVERRIDES ====================
+# Note: These settings will be overridden in production environment
+production:
+  # Security (these should be overridden in production.yaml)
+  authentication_required: true
+  api_keys_required: true
+  rate_limiting_strict: true
+  https_only: true
+  
+  # Performance
+  cache_enabled: true
+  compression_enabled: true
+  cdn_enabled: true
+  
+  # Monitoring
+  detailed_monitoring: true
+  alert_enabled: true
+  uptime_monitoring: true
+  
+  # Backup
+  automated_backup: true
+  backup_to_cloud: true
+  disaster_recovery: true
+
+# ==================== API VERSIONING ====================
+api_versioning:
+  # Version strategy
+  strategy: "url_path"  # url_path, header, query_param
+  current_version: "v1"
+  supported_versions: ["v1"]
+  
+  # Deprecation policy
+  deprecation_notice_period_days: 90
+  version_sunset_period_days: 180
+  
+  # Backward compatibility
+  maintain_backward_compatibility: true
+  breaking_change_notification: true

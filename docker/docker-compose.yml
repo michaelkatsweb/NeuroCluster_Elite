@@ -1,0 +1,496 @@
+# File: docker-compose.yml
+# Path: NeuroCluster-Elite/docker-compose.yml
+# Description: Docker Compose configuration for NeuroCluster Elite Trading Platform
+#
+# This compose file orchestrates all services required for the NeuroCluster Elite
+# trading platform including the main application, database, cache, monitoring,
+# and optional services like reverse proxy and data feeds.
+#
+# Services included:
+# - neurocluster-app: Main trading application
+# - neurocluster-api: REST API server
+# - redis: Caching and session storage
+# - postgres: Production database (optional)
+# - nginx: Reverse proxy and load balancer
+# - prometheus: Metrics collection
+# - grafana: Monitoring dashboard
+# - jupyter: Data analysis environment
+#
+# Usage:
+#   docker-compose up -d                    # Start all services
+#   docker-compose up neurocluster-app      # Start specific service
+#   docker-compose -f docker-compose.yml -f docker-compose.dev.yml up  # Development
+#   docker-compose down                     # Stop all services
+#   docker-compose logs neurocluster-app    # View logs
+#
+# Author: Your Name
+# Created: 2025-06-30
+# Version: 1.0.0
+# License: MIT
+
+version: '3.8'
+
+# ==================== SERVICES ====================
+services:
+
+  # ==================== MAIN APPLICATION ====================
+  neurocluster-app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: production
+      args:
+        - BUILD_DATE=${BUILD_DATE:-}
+        - VCS_REF=${VCS_REF:-}
+        - VERSION=${VERSION:-1.0.0}
+    image: neurocluster-elite:latest
+    container_name: neurocluster-app
+    restart: unless-stopped
+    ports:
+      - "8501:8501"  # Streamlit dashboard
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - LOG_LEVEL=INFO
+      - PAPER_TRADING=true
+      - INITIAL_CAPITAL=${INITIAL_CAPITAL:-100000}
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql://neurocluster:${POSTGRES_PASSWORD:-neurocluster123}@postgres:5432/neurocluster
+      - API_URL=http://neurocluster-api:8000
+      # API Keys (set in .env file)
+      - ALPHA_VANTAGE_API_KEY=${ALPHA_VANTAGE_API_KEY:-}
+      - POLYGON_API_KEY=${POLYGON_API_KEY:-}
+      - BINANCE_API_KEY=${BINANCE_API_KEY:-}
+      - BINANCE_SECRET=${BINANCE_SECRET:-}
+      # Notification settings
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL:-}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - EMAIL_SMTP_SERVER=${EMAIL_SMTP_SERVER:-}
+      - EMAIL_USERNAME=${EMAIL_USERNAME:-}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD:-}
+    volumes:
+      - neurocluster_data:/app/data
+      - neurocluster_logs:/app/logs
+      - ./config:/app/config:ro  # Mount config as read-only
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - neurocluster-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.neurocluster-app.rule=Host(`neurocluster.local`)"
+      - "traefik.http.routers.neurocluster-app.entrypoints=web"
+      - "traefik.http.services.neurocluster-app.loadbalancer.server.port=8501"
+
+  # ==================== API SERVER ====================
+  neurocluster-api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: production
+    image: neurocluster-elite:latest
+    container_name: neurocluster-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"  # FastAPI server
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - LOG_LEVEL=INFO
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql://neurocluster:${POSTGRES_PASSWORD:-neurocluster123}@postgres:5432/neurocluster
+      # API Keys
+      - ALPHA_VANTAGE_API_KEY=${ALPHA_VANTAGE_API_KEY:-}
+      - POLYGON_API_KEY=${POLYGON_API_KEY:-}
+      - BINANCE_API_KEY=${BINANCE_API_KEY:-}
+      - BINANCE_SECRET=${BINANCE_SECRET:-}
+    volumes:
+      - neurocluster_data:/app/data
+      - neurocluster_logs:/app/logs
+      - ./config:/app/config:ro
+      - /etc/localtime:/etc/localtime:ro
+    command: ["python", "main_server.py", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - neurocluster-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.neurocluster-api.rule=Host(`api.neurocluster.local`)"
+      - "traefik.http.routers.neurocluster-api.entrypoints=web"
+      - "traefik.http.services.neurocluster-api.loadbalancer.server.port=8000"
+
+  # ==================== REDIS CACHE ====================
+  redis:
+    image: redis:7-alpine
+    container_name: neurocluster-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - neurocluster-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    labels:
+      - "traefik.enable=false"
+
+  # ==================== POSTGRESQL DATABASE ====================
+  postgres:
+    image: postgres:15-alpine
+    container_name: neurocluster-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=neurocluster
+      - POSTGRES_USER=neurocluster
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-neurocluster123}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - neurocluster-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neurocluster -d neurocluster"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "traefik.enable=false"
+
+  # ==================== NGINX REVERSE PROXY ====================
+  nginx:
+    image: nginx:alpine
+    container_name: neurocluster-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx-default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/ssl:/etc/nginx/ssl:ro
+      - neurocluster_logs:/var/log/nginx
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - neurocluster-app
+      - neurocluster-api
+    networks:
+      - neurocluster-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "traefik.enable=false"
+
+  # ==================== PROMETHEUS MONITORING ====================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: neurocluster-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - neurocluster-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.neurocluster.local`)"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+
+  # ==================== GRAFANA DASHBOARD ====================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: neurocluster-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-neurocluster123}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://grafana.neurocluster.local
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - prometheus
+    networks:
+      - neurocluster-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.neurocluster.local`)"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+
+  # ==================== JUPYTER NOTEBOOK ====================
+  jupyter:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: development
+    image: neurocluster-elite:dev
+    container_name: neurocluster-jupyter
+    restart: unless-stopped
+    ports:
+      - "8888:8888"
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=${JUPYTER_TOKEN:-neurocluster123}
+    volumes:
+      - ./notebooks:/app/notebooks
+      - neurocluster_data:/app/data:ro
+      - ./examples:/app/examples:ro
+      - /etc/localtime:/etc/localtime:ro
+    command: ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--NotebookApp.token=${JUPYTER_TOKEN:-neurocluster123}"]
+    networks:
+      - neurocluster-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jupyter.rule=Host(`jupyter.neurocluster.local`)"
+      - "traefik.http.services.jupyter.loadbalancer.server.port=8888"
+    profiles:
+      - development
+      - analysis
+
+  # ==================== ADMINER DATABASE ADMIN ====================
+  adminer:
+    image: adminer:latest
+    container_name: neurocluster-adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - ADMINER_DEFAULT_SERVER=postgres
+    depends_on:
+      - postgres
+    networks:
+      - neurocluster-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.adminer.rule=Host(`adminer.neurocluster.local`)"
+      - "traefik.http.services.adminer.loadbalancer.server.port=8080"
+    profiles:
+      - development
+      - admin
+
+  # ==================== TRAEFIK REVERSE PROXY ====================
+  traefik:
+    image: traefik:v2.10
+    container_name: neurocluster-traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8081:8080"  # Traefik dashboard
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.myresolver.acme.email=${ACME_EMAIL:-admin@neurocluster.local}"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "letsencrypt_data:/letsencrypt"
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - neurocluster-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`traefik.neurocluster.local`)"
+      - "traefik.http.routers.api.service=api@internal"
+    profiles:
+      - production
+      - traefik
+
+# ==================== NETWORKS ====================
+networks:
+  neurocluster-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# ==================== VOLUMES ====================
+volumes:
+  neurocluster_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data
+  
+  neurocluster_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./logs
+  
+  redis_data:
+    driver: local
+  
+  postgres_data:
+    driver: local
+  
+  prometheus_data:
+    driver: local
+  
+  grafana_data:
+    driver: local
+  
+  letsencrypt_data:
+    driver: local
+
+# ==================== DEVELOPMENT OVERRIDE ====================
+# Create docker-compose.override.yml for local development:
+#
+# version: '3.8'
+# services:
+#   neurocluster-app:
+#     build:
+#       target: development
+#     environment:
+#       - DEBUG=true
+#       - LOG_LEVEL=DEBUG
+#     volumes:
+#       - .:/app
+#     ports:
+#       - "8501:8501"
+#       - "5678:5678"  # debugpy
+#   
+#   neurocluster-api:
+#     build:
+#       target: development
+#     environment:
+#       - DEBUG=true
+#       - LOG_LEVEL=DEBUG
+#     volumes:
+#       - .:/app
+#     command: ["python", "-m", "debugpy", "--listen", "0.0.0.0:5679", "--wait-for-client", "main_server.py"]
+#     ports:
+#       - "5679:5679"  # debugpy
+
+# ==================== PRODUCTION SCALING ====================
+# For production scaling, use:
+#
+# docker-compose up --scale neurocluster-app=3 --scale neurocluster-api=2
+#
+# Or create docker-compose.prod.yml:
+#
+# version: '3.8'
+# services:
+#   neurocluster-app:
+#     deploy:
+#       replicas: 3
+#       resources:
+#         limits:
+#           cpus: '1.0'
+#           memory: 1G
+#         reservations:
+#           cpus: '0.5'
+#           memory: 512M
+#   
+#   neurocluster-api:
+#     deploy:
+#       replicas: 2
+#       resources:
+#         limits:
+#           cpus: '0.5'
+#           memory: 512M
+
+# ==================== USAGE EXAMPLES ====================
+#
+# Start all services:
+# docker-compose up -d
+#
+# Start only core services:
+# docker-compose up -d neurocluster-app neurocluster-api redis postgres
+#
+# Start with development profile:
+# docker-compose --profile development up -d
+#
+# Start with monitoring:
+# docker-compose --profile production up -d
+#
+# View logs:
+# docker-compose logs -f neurocluster-app
+#
+# Scale services:
+# docker-compose up -d --scale neurocluster-api=3
+#
+# Update single service:
+# docker-compose up -d --build neurocluster-app
+#
+# Stop all services:
+# docker-compose down
+#
+# Stop and remove volumes:
+# docker-compose down -v
+#
+# Health check all services:
+# docker-compose ps
+#
+# Execute commands in container:
+# docker-compose exec neurocluster-app python -c "import src.core.neurocluster_elite; print('OK')"
+#
+# Access specific URLs:
+# - Main Dashboard: http://localhost:8501
+# - API Documentation: http://localhost:8000/docs
+# - Grafana: http://localhost:3000 (admin/neurocluster123)
+# - Prometheus: http://localhost:9090
+# - Jupyter: http://localhost:8888 (token: neurocluster123)
+# - Adminer: http://localhost:8080
+# - Traefik Dashboard: http://localhost:8081

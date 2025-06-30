@@ -1,0 +1,570 @@
+# File: risk_config.yaml
+# Path: NeuroCluster-Elite/config/risk_config.yaml
+# Description: Risk management configuration for NeuroCluster Elite
+#
+# This configuration file contains comprehensive risk management settings
+# including position limits, drawdown controls, volatility management,
+# and emergency procedures to protect capital.
+#
+# Author: Your Name
+# Created: 2025-06-29
+# Version: 1.0.0
+# License: MIT
+
+# ==================== GLOBAL RISK SETTINGS ====================
+global_risk:
+  # Overall portfolio risk
+  max_portfolio_risk: 0.02     # 2% max portfolio risk per day
+  max_monthly_drawdown: 0.10   # 10% max monthly drawdown
+  max_annual_drawdown: 0.20    # 20% max annual drawdown
+  
+  # Position concentration limits
+  max_single_position: 0.10    # 10% max in single position
+  max_correlated_positions: 0.25  # 25% max in correlated positions (>0.7 correlation)
+  max_sector_exposure: 0.30    # 30% max in single sector
+  max_asset_class_exposure: 0.70  # 70% max in single asset class
+  
+  # Leverage limits
+  max_leverage: 1.0            # No leverage initially
+  max_margin_usage: 0.0        # No margin initially
+  leverage_by_asset:
+    stocks: 1.0                # No leverage for stocks
+    crypto: 1.0                # No leverage for crypto
+    forex: 1.0                 # No leverage for forex initially
+    commodities: 1.0           # No leverage for commodities
+  
+  # Cash management
+  min_cash_reserve: 0.05       # Keep minimum 5% cash
+  emergency_cash_reserve: 0.10 # 10% emergency cash reserve
+
+# ==================== POSITION-LEVEL RISK MANAGEMENT ====================
+position_risk:
+  # Position sizing constraints
+  max_position_size_pct: 0.10  # 10% max position size
+  min_position_size_pct: 0.005 # 0.5% min position size
+  position_size_increment: 0.001  # 0.1% position size increments
+  
+  # Position limits by asset type
+  asset_position_limits:
+    stocks:
+      max_position_pct: 0.10   # 10% max per stock
+      max_positions: 50        # Max 50 stock positions
+      min_market_cap: 1000000000  # $1B min market cap
+      min_avg_volume: 1000000  # 1M shares daily volume
+    crypto:
+      max_position_pct: 0.08   # 8% max per crypto (higher volatility)
+      max_positions: 20        # Max 20 crypto positions
+      min_market_cap: 100000000   # $100M min market cap
+      min_avg_volume_usd: 10000000  # $10M daily volume
+    forex:
+      max_position_pct: 0.15   # 15% max per pair
+      max_positions: 10        # Max 10 forex positions
+      major_pairs_only: true   # Only major pairs initially
+    commodities:
+      max_position_pct: 0.12   # 12% max per commodity
+      max_positions: 8         # Max 8 commodity positions
+      futures_only: false      # ETFs only initially
+  
+  # Position holding time limits
+  max_holding_period_days: 90  # Force review after 90 days
+  min_holding_period_minutes: 5  # Prevent scalping initially
+  
+  # Position monitoring
+  position_rebalance_threshold: 0.05  # Rebalance if position drifts >5%
+  position_review_frequency: "daily"
+  position_alert_threshold: 0.15      # Alert if position >15%
+
+# ==================== STOP LOSS RISK MANAGEMENT ====================
+stop_loss_risk:
+  # Global stop loss settings
+  mandatory_stop_loss: true
+  max_stop_loss_distance: 0.10  # 10% max stop loss distance
+  min_stop_loss_distance: 0.005 # 0.5% min stop loss distance
+  
+  # Stop loss methods by asset
+  stop_loss_methods:
+    stocks:
+      method: "atr"            # ATR-based stops for stocks
+      atr_multiplier: 2.0
+      atr_periods: 14
+      max_stop_pct: 0.05       # 5% max stop loss
+    crypto:
+      method: "volatility"     # Volatility-adjusted stops
+      volatility_multiplier: 2.5
+      max_stop_pct: 0.08       # 8% max stop loss (higher volatility)
+      min_stop_pct: 0.02       # 2% min stop loss
+    forex:
+      method: "fixed"          # Fixed percentage stops
+      stop_pct: 0.015          # 1.5% stop loss
+      use_support_resistance: true
+    commodities:
+      method: "atr"            # ATR-based stops
+      atr_multiplier: 2.2
+      max_stop_pct: 0.06       # 6% max stop loss
+  
+  # Trailing stop settings
+  trailing_stops:
+    enabled: true
+    activation_profit: 0.02    # Start trailing after 2% profit
+    trail_amount: 0.01         # 1% trailing amount
+    trail_step: 0.005          # 0.5% trailing step
+  
+  # Stop loss protection
+  gap_protection: true
+  overnight_protection: true
+  weekend_protection: true
+  earnings_protection: true
+
+# ==================== DRAWDOWN CONTROLS ====================
+drawdown_controls:
+  # Drawdown thresholds
+  warning_drawdown: 0.05       # 5% drawdown warning
+  critical_drawdown: 0.10      # 10% drawdown critical level
+  emergency_drawdown: 0.15     # 15% drawdown emergency stop
+  
+  # Drawdown actions
+  drawdown_actions:
+    warning_level:
+      - "send_alert"
+      - "increase_monitoring"
+      - "review_positions"
+    critical_level:
+      - "reduce_position_sizes"
+      - "tighten_stop_losses"
+      - "pause_new_positions"
+      - "executive_notification"
+    emergency_level:
+      - "close_all_positions"
+      - "stop_trading"
+      - "emergency_meeting"
+      - "full_review_required"
+  
+  # Drawdown calculation
+  drawdown_calculation_method: "peak_to_trough"
+  drawdown_calculation_period: "daily"
+  rolling_drawdown_period: 30  # 30-day rolling drawdown
+  
+  # Recovery requirements
+  recovery_threshold: 0.80     # 80% recovery before resuming normal trading
+  recovery_period_days: 30     # Must maintain recovery for 30 days
+  stress_test_required: true   # Stress test before resuming
+
+# ==================== VOLATILITY RISK MANAGEMENT ====================
+volatility_risk:
+  # Portfolio volatility targets
+  target_portfolio_volatility: 0.15  # 15% annual volatility target
+  max_portfolio_volatility: 0.25     # 25% max annual volatility
+  volatility_calculation_window: 30   # 30-day calculation window
+  
+  # Volatility-based position sizing
+  volatility_adjusted_sizing: true
+  volatility_lookback_days: 20
+  volatility_scaling_factor: 0.15     # Scale positions by volatility
+  
+  # Volatility limits by asset
+  asset_volatility_limits:
+    stocks:
+      max_individual_volatility: 0.40  # 40% max individual stock volatility
+      volatility_alert_threshold: 0.35 # Alert at 35% volatility
+    crypto:
+      max_individual_volatility: 0.80  # 80% max crypto volatility
+      volatility_alert_threshold: 0.60 # Alert at 60% volatility
+    forex:
+      max_individual_volatility: 0.20  # 20% max forex volatility
+      volatility_alert_threshold: 0.15 # Alert at 15% volatility
+    commodities:
+      max_individual_volatility: 0.30  # 30% max commodity volatility
+      volatility_alert_threshold: 0.25 # Alert at 25% volatility
+  
+  # Volatility regime detection
+  volatility_regime_detection: true
+  high_volatility_threshold: 0.30     # 30% high volatility threshold
+  low_volatility_threshold: 0.10      # 10% low volatility threshold
+  
+  # Volatility-based actions
+  high_volatility_actions:
+    - "reduce_position_sizes"
+    - "tighten_stop_losses"
+    - "increase_cash_allocation"
+    - "pause_momentum_strategies"
+  low_volatility_actions:
+    - "increase_position_sizes"
+    - "loosen_stop_losses"
+    - "deploy_mean_reversion_strategies"
+
+# ==================== CORRELATION RISK MANAGEMENT ====================
+correlation_risk:
+  # Correlation monitoring
+  correlation_monitoring: true
+  correlation_calculation_window: 30   # 30-day correlation window
+  correlation_update_frequency: "daily"
+  
+  # Correlation limits
+  max_pairwise_correlation: 0.70      # 70% max correlation between positions
+  max_basket_correlation: 0.50        # 50% max correlation for basket of positions
+  correlation_concentration_limit: 0.25  # 25% max in highly correlated positions
+  
+  # Correlation-based position limits
+  correlated_position_scaling:
+    correlation_0_3: 1.0              # No scaling for low correlation
+    correlation_3_5: 0.9              # 10% reduction for medium correlation
+    correlation_5_7: 0.7              # 30% reduction for high correlation
+    correlation_7_plus: 0.5           # 50% reduction for very high correlation
+  
+  # Asset class correlation monitoring
+  asset_class_correlations:
+    monitor_equity_sectors: true
+    monitor_crypto_categories: true
+    monitor_currency_clusters: true
+    monitor_commodity_groups: true
+  
+  # Crisis correlation monitoring
+  crisis_correlation_increase: 0.30    # 30% correlation increase threshold
+  crisis_correlation_actions:
+    - "reduce_overall_exposure"
+    - "increase_diversification"
+    - "hedge_portfolio"
+    - "emergency_rebalancing"
+
+# ==================== LIQUIDITY RISK MANAGEMENT ====================
+liquidity_risk:
+  # Liquidity requirements
+  min_daily_volume_stocks: 1000000    # $1M daily volume for stocks
+  min_daily_volume_crypto: 10000000   # $10M daily volume for crypto
+  min_bid_ask_spread: 0.005           # 0.5% max bid-ask spread
+  
+  # Position liquidity limits
+  max_position_vs_daily_volume: 0.05  # Max 5% of daily volume
+  liquidity_buffer: 0.20              # 20% liquidity buffer for exits
+  
+  # Liquidity stress testing
+  liquidity_stress_test: true
+  stress_test_scenarios:
+    - "50_percent_volume_reduction"
+    - "double_bid_ask_spread"
+    - "market_maker_withdrawal"
+  
+  # Illiquid position management
+  illiquid_position_threshold: 0.02   # 2% of position size per day max trade
+  illiquid_position_actions:
+    - "reduce_position_size"
+    - "extend_exit_timeline"
+    - "use_alternative_venues"
+  
+  # Emergency liquidity procedures
+  emergency_liquidity_threshold: 0.05  # 5% of portfolio
+  emergency_liquidity_actions:
+    - "liquidate_most_liquid_first"
+    - "use_market_orders"
+    - "accept_higher_slippage"
+
+# ==================== LEVERAGE AND MARGIN RISK ====================
+leverage_risk:
+  # Leverage controls (initially disabled)
+  leverage_enabled: false
+  max_gross_leverage: 1.0             # No leverage initially
+  max_net_leverage: 1.0               # No net leverage initially
+  
+  # Margin requirements (for future use)
+  margin_requirements:
+    initial_margin_ratio: 0.50        # 50% initial margin
+    maintenance_margin_ratio: 0.30    # 30% maintenance margin
+    margin_call_threshold: 0.35       # 35% margin call threshold
+  
+  # Leverage by asset class (for future use)
+  leverage_by_asset:
+    stocks: 1.0                       # No leverage for stocks
+    crypto: 1.0                       # No leverage for crypto
+    forex: 1.0                        # No leverage for forex initially
+    commodities: 1.0                  # No leverage for commodities
+  
+  # Leverage monitoring
+  leverage_monitoring: true
+  leverage_calculation_frequency: "real_time"
+  leverage_alert_threshold: 0.8      # Alert at 80% of max leverage
+  
+  # Margin call procedures
+  margin_call_actions:
+    - "immediate_notification"
+    - "position_liquidation_plan"
+    - "risk_reduction_measures"
+    - "leverage_suspension"
+
+# ==================== CONCENTRATION RISK MANAGEMENT ====================
+concentration_risk:
+  # Concentration limits
+  single_security_limit: 0.10        # 10% max in single security
+  sector_concentration_limit: 0.25    # 25% max in single sector
+  geographic_concentration_limit: 0.60  # 60% max in single country
+  currency_concentration_limit: 0.70  # 70% max in single currency
+  
+  # Concentration monitoring
+  concentration_monitoring: true
+  concentration_calculation_frequency: "daily"
+  concentration_alert_threshold: 0.80  # Alert at 80% of limit
+  
+  # Sector concentration limits
+  sector_limits:
+    technology: 0.30               # 30% max in technology
+    healthcare: 0.20               # 20% max in healthcare
+    financials: 0.20               # 20% max in financials
+    consumer_discretionary: 0.15   # 15% max in consumer discretionary
+    energy: 0.15                   # 15% max in energy
+    other_sectors: 0.10            # 10% max in other sectors each
+  
+  # Geographic concentration limits
+  geographic_limits:
+    united_states: 0.60            # 60% max in US
+    developed_markets: 0.30        # 30% max in other developed markets
+    emerging_markets: 0.20         # 20% max in emerging markets
+    
+  # Concentration rebalancing
+  rebalancing_trigger: 0.05          # Rebalance if over limit by 5%
+  rebalancing_frequency: "weekly"
+  concentration_reduction_rate: 0.20  # Reduce by 20% per rebalancing
+
+# ==================== OPERATIONAL RISK MANAGEMENT ====================
+operational_risk:
+  # System risk controls
+  system_monitoring: true
+  system_health_checks: true
+  system_redundancy: true
+  
+  # Order management risk
+  order_validation: true
+  duplicate_order_prevention: true
+  fat_finger_protection: true
+  order_size_limits:
+    max_order_size_pct: 0.05         # 5% max order size
+    max_order_value: 10000           # $10,000 max order value
+  
+  # Data quality risk
+  data_quality_monitoring: true
+  stale_data_threshold: 300          # 5 minutes stale data threshold
+  data_validation_rules: true
+  missing_data_handling: true
+  
+  # Connectivity risk
+  connection_monitoring: true
+  connection_redundancy: true
+  connection_timeout: 30             # 30 second connection timeout
+  
+  # Execution risk
+  execution_monitoring: true
+  slippage_monitoring: true
+  fill_rate_monitoring: true
+  execution_quality_metrics: true
+
+# ==================== COUNTERPARTY RISK MANAGEMENT ====================
+counterparty_risk:
+  # Broker/exchange limits
+  max_exposure_per_broker: 0.50      # 50% max with single broker
+  max_exposure_per_exchange: 0.60    # 60% max on single exchange
+  
+  # Credit risk assessment
+  counterparty_credit_monitoring: true
+  credit_rating_requirements:
+    brokers: "A-"                    # Minimum A- rating for brokers
+    exchanges: "A"                   # Minimum A rating for exchanges
+  
+  # Diversification requirements
+  min_number_of_brokers: 2           # Minimum 2 brokers
+  min_number_of_exchanges: 3         # Minimum 3 exchanges
+  
+  # Settlement risk
+  settlement_monitoring: true
+  settlement_period_limits:
+    stocks: 2                        # T+2 settlement
+    crypto: 0                        # Immediate settlement
+    forex: 2                         # T+2 settlement
+    commodities: 1                   # T+1 settlement
+
+# ==================== MARKET RISK MANAGEMENT ====================
+market_risk:
+  # Market condition monitoring
+  market_regime_detection: true
+  volatility_regime_monitoring: true
+  trend_regime_monitoring: true
+  
+  # Bear market protection
+  bear_market_threshold: -0.20       # 20% decline threshold
+  bear_market_actions:
+    - "increase_cash_allocation"
+    - "reduce_equity_exposure"
+    - "activate_defensive_strategies"
+    - "tighten_risk_controls"
+  
+  # Market crash protection
+  market_crash_threshold: -0.05      # 5% daily decline threshold
+  circuit_breaker_levels:
+    level_1: -0.07                   # 7% decline - reduce positions
+    level_2: -0.13                   # 13% decline - close non-core positions
+    level_3: -0.20                   # 20% decline - emergency liquidation
+  
+  # VIX-based adjustments
+  vix_monitoring: true
+  high_vix_threshold: 30             # VIX > 30 is high volatility
+  extreme_vix_threshold: 40          # VIX > 40 is extreme volatility
+  
+  # Market hours risk
+  after_hours_trading: false         # Disable after-hours trading
+  weekend_trading: false             # Disable weekend trading (crypto)
+  holiday_trading: false             # Disable holiday trading
+
+# ==================== REGULATORY RISK MANAGEMENT ====================
+regulatory_risk:
+  # Compliance monitoring
+  regulatory_compliance: true
+  position_reporting: true
+  trade_reporting: true
+  
+  # Pattern day trader rules
+  pdt_protection: true
+  pdt_threshold: 25000               # $25,000 PDT threshold
+  max_day_trades: 3                  # Max 3 day trades per 5 days
+  
+  # Wash sale rules
+  wash_sale_monitoring: true
+  wash_sale_period: 30               # 30-day wash sale period
+  
+  # Insider trading prevention
+  insider_trading_monitoring: true
+  blackout_periods: true
+  material_information_checks: true
+  
+  # Record keeping
+  audit_trail_maintenance: true
+  record_retention_period: 2555      # 7 years in days
+  compliance_reporting: true
+
+# ==================== STRESS TESTING AND SCENARIO ANALYSIS ====================
+stress_testing:
+  # Stress test frequency
+  stress_test_frequency: "monthly"
+  scenario_analysis_frequency: "quarterly"
+  
+  # Standard stress scenarios
+  stress_scenarios:
+    - name: "2008_financial_crisis"
+      description: "2008-style financial crisis scenario"
+      equity_decline: -0.50
+      credit_spread_widening: 500  # basis points
+      volatility_increase: 200     # percent
+    - name: "flash_crash"
+      description: "Flash crash scenario"
+      equity_decline: -0.10
+      liquidity_reduction: -0.70
+      volatility_spike: 300        # percent
+    - name: "crypto_winter"
+      description: "Crypto bear market scenario"
+      crypto_decline: -0.80
+      correlation_increase: 0.30
+      volume_reduction: -0.50
+    - name: "currency_crisis"
+      description: "Currency crisis scenario"
+      currency_volatility: 300     # percent increase
+      correlation_breakdown: true
+      flight_to_quality: true
+  
+  # Stress test thresholds
+  stress_test_thresholds:
+    max_portfolio_loss: -0.25        # 25% max loss in stress test
+    max_position_loss: -0.50         # 50% max single position loss
+    min_liquidity_ratio: 0.20       # 20% min liquidity in stress
+  
+  # Stress test actions
+  stress_test_failure_actions:
+    - "immediate_risk_reduction"
+    - "portfolio_rebalancing"
+    - "strategy_modification"
+    - "capital_preservation_mode"
+
+# ==================== EMERGENCY PROCEDURES ====================
+emergency_procedures:
+  # Emergency triggers
+  emergency_triggers:
+    - "portfolio_loss_10_percent"
+    - "single_position_loss_25_percent"
+    - "system_malfunction"
+    - "market_circuit_breaker"
+    - "regulatory_action"
+    - "counterparty_default"
+  
+  # Emergency contact list
+  emergency_contacts:
+    - role: "portfolio_manager"
+      contact: "pm@neurocluster.com"
+      phone: "+1-555-0101"
+    - role: "risk_manager"
+      contact: "risk@neurocluster.com"
+      phone: "+1-555-0102"
+    - role: "compliance_officer"
+      contact: "compliance@neurocluster.com"
+      phone: "+1-555-0103"
+  
+  # Emergency actions
+  emergency_action_plan:
+    immediate_actions:
+      - "stop_all_new_trades"
+      - "assess_current_positions"
+      - "notify_emergency_contacts"
+      - "document_incident"
+    
+    risk_mitigation:
+      - "close_high_risk_positions"
+      - "reduce_overall_exposure"
+      - "increase_cash_allocation"
+      - "hedge_remaining_positions"
+    
+    recovery_planning:
+      - "analyze_root_cause"
+      - "develop_recovery_plan"
+      - "implement_corrective_measures"
+      - "update_risk_procedures"
+  
+  # Post-emergency review
+  post_emergency_review: true
+  review_committee_required: true
+  external_review_threshold: -0.15   # 15% loss requires external review
+  regulatory_notification_threshold: -0.20  # 20% loss requires regulatory notification
+
+# ==================== RISK REPORTING ====================
+risk_reporting:
+  # Reporting frequency
+  daily_risk_report: true
+  weekly_risk_summary: true
+  monthly_risk_review: true
+  quarterly_risk_assessment: true
+  
+  # Report recipients
+  report_distribution:
+    daily:
+      - "portfolio_manager"
+      - "risk_manager"
+    weekly:
+      - "portfolio_manager"
+      - "risk_manager"
+      - "chief_investment_officer"
+    monthly:
+      - "all_stakeholders"
+      - "board_of_directors"
+  
+  # Risk metrics to report
+  key_risk_metrics:
+    - "portfolio_value_at_risk"
+    - "maximum_drawdown"
+    - "sharpe_ratio"
+    - "beta_to_benchmark"
+    - "correlation_analysis"
+    - "concentration_analysis"
+    - "liquidity_analysis"
+    - "stress_test_results"
+  
+  # Alert thresholds for reporting
+  alert_thresholds:
+    daily_loss: -0.02              # 2% daily loss
+    weekly_loss: -0.05             # 5% weekly loss
+    monthly_loss: -0.10            # 10% monthly loss
+    position_size: 0.12            # 12% position size
+    sector_concentration: 0.28     # 28% sector concentration
+    volatility_increase: 0.50      # 50% volatility increase
