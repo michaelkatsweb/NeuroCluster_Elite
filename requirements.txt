@@ -1,0 +1,367 @@
+# File: requirements.txt
+# Path: NeuroCluster-Elite/requirements.txt
+# Description: Production dependencies for NeuroCluster Elite Trading Platform
+#
+# This file contains all dependencies required for the NeuroCluster Elite platform.
+# The dependencies are organized by category and include version pins for production stability.
+#
+# Installation:
+#   pip install -r requirements.txt
+#   pip install -r requirements.txt --upgrade
+#
+# Optional extras:
+#   pip install -e ".[full]"     # All features
+#   pip install -e ".[voice]"    # Voice control
+#   pip install -e ".[crypto]"   # Crypto trading
+#   pip install -e ".[dev]"      # Development tools
+#
+# Author: Your Name
+# Created: 2025-06-28
+# Version: 1.0.0
+# License: MIT
+
+# ==================== CORE FRAMEWORK ====================
+# Web framework and server
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+gunicorn==21.2.0
+websockets==12.0
+
+# Streamlit dashboard
+streamlit==1.28.1
+streamlit-option-menu==0.3.6
+streamlit-plotly-events==0.0.6
+streamlit-aggrid==0.3.4
+
+# HTTP clients
+httpx==0.25.2
+aiohttp==3.9.1
+requests==2.31.0
+
+# ==================== DATA PROCESSING ====================
+# Core data libraries
+numpy==1.25.2
+pandas==2.1.3
+scipy==1.11.4
+
+# Scientific computing
+scikit-learn==1.3.2
+tensorflow==2.15.0
+torch==2.1.1
+
+# Statistical analysis
+statsmodels==0.14.0
+pymc==5.9.0
+
+# ==================== FINANCIAL DATA ====================
+# Market data providers
+yfinance==0.2.22
+alpha-vantage==2.3.1
+polygon-api-client==1.12.3
+quandl==3.7.0
+fredapi==0.5.1
+
+# Cryptocurrency exchanges
+ccxt==4.1.31
+python-binance==1.0.19
+coinbase-pro==0.3.0
+
+# Alternative data
+newsapi-python==0.2.7
+tweepy==4.14.0
+praw==7.7.1
+
+# ==================== TECHNICAL ANALYSIS ====================
+# Technical indicators
+ta==0.10.2
+talib-binary==0.4.25
+pandas-ta==0.3.14b0
+
+# Backtesting frameworks
+backtrader==1.9.78.123
+zipline-reloaded==3.0.3
+vectorbt==0.25.2
+
+# ==================== DATABASE AND STORAGE ====================
+# SQL databases
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+sqlite3-utils==3.35
+
+# NoSQL and caching
+redis==5.0.1
+pymongo==4.6.0
+
+# Database migrations
+alembic==1.12.1
+
+# ==================== VISUALIZATION ====================
+# Interactive plotting
+plotly==5.17.0
+dash==2.14.2
+bokeh==3.3.0
+
+# Static plotting
+matplotlib==3.8.2
+seaborn==0.13.0
+
+# Financial charts
+mplfinance==0.12.10a0
+
+# ==================== MACHINE LEARNING ====================
+# Core ML libraries
+xgboost==2.0.1
+lightgbm==4.1.0
+catboost==1.2.2
+
+# Deep learning
+keras==2.15.0
+transformers==4.35.2
+
+# Feature engineering
+featuretools==1.28.0
+tsfresh==0.20.1
+
+# ==================== TRADING PLATFORMS ====================
+# Broker APIs
+ib-insync==0.9.86
+alpaca-trade-api==3.0.0
+robin-stocks==3.0.0
+
+# Portfolio management
+zipline-reloaded==3.0.3
+empyrical==0.5.5
+pyfolio-reloaded==0.9.5
+
+# ==================== VOICE AND NLP ====================
+# Speech recognition
+SpeechRecognition==3.10.0
+pyttsx3==2.90
+pyaudio==0.2.13
+
+# Text processing
+textblob==0.17.1
+nltk==3.8.1
+spacy==3.7.2
+vaderSentiment==3.3.2
+
+# ==================== CONFIGURATION ====================
+# Settings management
+pydantic==2.5.0
+pydantic-settings==2.1.0
+python-dotenv==1.0.0
+pyyaml==6.0.1
+toml==0.10.2
+
+# ==================== SECURITY ====================
+# Authentication and encryption
+cryptography==41.0.7
+passlib[bcrypt]==1.7.4
+python-jose[cryptography]==3.3.0
+python-multipart==0.0.6
+PyJWT==2.8.0
+
+# ==================== MONITORING ====================
+# Metrics and monitoring
+prometheus-client==0.19.0
+psutil==5.9.6
+memory-profiler==0.61.0
+py-spy==0.3.14
+
+# APM
+sentry-sdk[fastapi]==1.38.0
+
+# ==================== NOTIFICATIONS ====================
+# Email
+yagmail==0.15.293
+smtplib2==0.2.1
+
+# Chat platforms
+discord.py==2.3.2
+python-telegram-bot==20.7
+slack-sdk==3.23.0
+
+# ==================== UTILITIES ====================
+# Date and time
+python-dateutil==2.8.2
+pytz==2023.3
+arrow==1.3.0
+
+# File handling
+openpyxl==3.1.2
+xlsxwriter==3.1.9
+python-docx==1.1.0
+
+# Async utilities
+asyncio-mqtt==0.13.0
+aiofiles==23.2.1
+
+# Command line
+click==8.1.7
+rich==13.7.0
+typer==0.9.0
+
+# Progress bars
+tqdm==4.66.1
+
+# ==================== DEVELOPMENT TOOLS ====================
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+pytest-xdist==3.3.1
+
+# Code quality
+black==23.11.0
+flake8==6.1.0
+mypy==1.7.1
+isort==5.12.0
+bandit==1.7.5
+
+# Pre-commit hooks
+pre-commit==3.6.0
+
+# Documentation
+sphinx==7.2.6
+mkdocs==1.5.3
+mkdocs-material==9.4.8
+
+# ==================== DEPLOYMENT ====================
+# Containerization
+docker==6.1.3
+
+# Cloud providers
+boto3==1.34.0
+google-cloud-storage==2.10.0
+azure-storage-blob==12.19.0
+
+# Infrastructure
+terraform-compliance==1.3.50
+
+# ==================== PERFORMANCE ====================
+# Optimization
+numba==0.58.1
+cython==3.0.6
+
+# Parallel processing
+joblib==1.3.2
+multiprocessing-logging==0.3.4
+
+# ==================== OPTIONAL EXTRAS ====================
+
+# Audio processing (for voice features)
+librosa==0.10.1
+soundfile==0.12.1
+wave==0.0.2
+
+# Computer vision (for chart pattern recognition)
+opencv-python==4.8.1.78
+pillow==10.1.0
+
+# Geographic data
+geopandas==0.14.1
+folium==0.15.1
+
+# Time series analysis
+arch==6.2.0
+prophet==1.1.4
+
+# ==================== VERSION CONSTRAINTS ====================
+
+# Python version requirement
+# python_requires>=3.8
+
+# Critical version pins for stability
+urllib3<2.0.0,>=1.26.0  # Compatibility with requests
+setuptools>=65.0.0       # Modern setuptools features
+wheel>=0.38.0           # Modern wheel format
+
+# ==================== DEVELOPMENT EXTRAS ====================
+
+# Jupyter notebooks (development)
+jupyter==1.0.0
+jupyterlab==4.0.8
+notebook==7.0.6
+
+# Data exploration
+pandas-profiling==3.6.6
+sweetviz==2.1.4
+
+# ==================== PLATFORM-SPECIFIC ====================
+
+# Windows-specific
+pywin32==306; sys_platform == "win32"
+winsound==1.0; sys_platform == "win32"
+
+# Linux-specific
+python-apt==2.4.0; sys_platform == "linux"
+
+# macOS-specific
+pyobjc-framework-Cocoa==10.0; sys_platform == "darwin"
+
+# ==================== INSTALLATION NOTES ====================
+
+# For TA-Lib installation:
+# Windows: Download from https://www.lfd.uci.edu/~gohlke/pythonlibs/#ta-lib
+# Linux: sudo apt-get install ta-lib
+# macOS: brew install ta-lib
+
+# For audio support (voice control):
+# Windows: No additional setup required
+# Linux: sudo apt-get install portaudio19-dev python3-pyaudio
+# macOS: brew install portaudio
+
+# For cryptocurrency trading:
+# Binance: Requires API key from https://www.binance.com/
+# Coinbase: Requires API key from https://developers.coinbase.com/
+
+# For news and sentiment analysis:
+# NewsAPI: Free key from https://newsapi.org/
+# Twitter: API v2 access from https://developer.twitter.com/
+
+# For broker integrations:
+# Interactive Brokers: Requires TWS or IB Gateway
+# Alpaca: Free API key from https://alpaca.markets/
+# TD Ameritrade: API key from https://developer.tdameritrade.com/
+
+# ==================== SECURITY CONSIDERATIONS ====================
+
+# Always pin versions in production
+# Regularly update dependencies for security patches
+# Use virtual environments
+# Scan for vulnerabilities with: pip-audit
+# Check licenses with: pip-licenses
+
+# ==================== PERFORMANCE OPTIMIZATION ====================
+
+# For faster numpy operations, install Intel MKL:
+# conda install mkl
+
+# For GPU acceleration (if available):
+# tensorflow-gpu==2.15.0
+# torch-gpu==2.1.1
+
+# ==================== TROUBLESHOOTING ====================
+
+# Common issues and solutions:
+
+# 1. TA-Lib installation fails:
+#    Windows: pip install --find-links https://download.lfd.uci.edu/pythonlibs/archived/ TA-Lib
+#    Linux: sudo apt-get install build-essential
+#    macOS: xcode-select --install
+
+# 2. Audio libraries fail:
+#    Linux: sudo apt-get install libasound2-dev
+#    Windows: Install Microsoft C++ Build Tools
+
+# 3. Memory issues with large datasets:
+#    Increase virtual memory
+#    Use data chunking
+#    Consider distributed computing
+
+# 4. SSL certificate issues:
+#    pip install --trusted-host pypi.org --trusted-host pypi.python.org
+
+# 5. Network timeout issues:
+#    pip install --timeout 300 -r requirements.txt

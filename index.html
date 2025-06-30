@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroCluster Elite - Ultimate Trading Platform</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%);
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-areas: 
+                "header header header header"
+                "sidebar main-content main-content chat"
+                "alerts main-content main-content chat";
+            grid-template-columns: 280px 1fr 1fr 320px;
+            grid-template-rows: 80px 1fr 200px;
+            height: 100vh;
+            gap: 1px;
+            background: #0a0a0a;
+        }
+
+        /* Header */
+        .header {
+            grid-area: header;
+            background: linear-gradient(90deg, #1a1a1a, #2a2a2a);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            border-bottom: 1px solid #333;
+            box-shadow: 0 4px 20px rgba(0, 255, 136, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00ff88, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .status-indicators {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00ff88;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            grid-area: sidebar;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 24px;
+            border-right: 1px solid #333;
+        }
+
+        .portfolio-summary {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 204, 255, 0.1));
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .portfolio-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #00ff88;
+            margin-bottom: 8px;
+        }
+
+        .portfolio-change {
+            font-size: 14px;
+            color: #00ff88;
+        }
+
+        .asset-allocation {
+            margin-top: 24px;
+        }
+
+        .asset-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .asset-type {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .asset-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        /* Main Content */
+        .main-content {
+            grid-area: main-content;
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 4px;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #00ff88, #00ccff);
+            color: #000;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Charts */
+        .chart-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .regime-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 24px;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .regime-confidence {
+            font-size: 18px;
+            font-weight: 700;
+            color: #00ff88;
+        }
+
+        /* Market Data Grid */
+        .market-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .market-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .market-card:hover {
+            border-color: #00ff88;
+            box-shadow: 0 8px 32px rgba(0, 255, 136, 0.2);
+        }
+
+        .symbol-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .symbol-name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .asset-badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .asset-badge.stock { background: rgba(0, 123, 255, 0.3); }
+        .asset-badge.crypto { background: rgba(255, 193, 7, 0.3); }
+        .asset-badge.forex { background: rgba(40, 167, 69, 0.3); }
+
+        .price-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .current-price {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .price-change {
+            text-align: right;
+        }
+
+        .change-value {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .change-percent {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .positive { color: #00ff88; }
+        .negative { color: #ff4757; }
+
+        /* Chat Panel */
+        .chat-panel {
+            grid-area: chat;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #333;
+        }
+
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid #333;
+            font-weight: 600;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            padding: 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .message.ai {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 204, 255, 0.1));
+            border-left: 3px solid #00ff88;
+        }
+
+        .chat-input {
+            padding: 20px;
+            border-top: 1px solid #333;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            outline: none;
+        }
+
+        .input-group button {
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #00ff88, #00ccff);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* Alerts Panel */
+        .alerts {
+            grid-area: alerts;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 20px;
+            border-top: 1px solid #333;
+            border-right: 1px solid #333;
+        }
+
+        .alert-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            background: rgba(255, 193, 7, 0.1);
+            border-left: 3px solid #ffc107;
+            font-size: 14px;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .control-button {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-button:hover {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: #00ff88;
+        }
+
+        .control-button.active {
+            background: linear-gradient(135deg, #00ff88, #00ccff);
+            color: #000;
+        }
+
+        /* Voice Control */
+        .voice-control {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 32px rgba(255, 107, 107, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .voice-control:hover {
+            transform: scale(1.1);
+        }
+
+        .voice-control.listening {
+            animation: voicePulse 1s infinite;
+        }
+
+        @keyframes voicePulse {
+            0%, 100% { box-shadow: 0 8px 32px rgba(255, 107, 107, 0.3); }
+            50% { box-shadow: 0 8px 48px rgba(255, 107, 107, 0.8); }
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-areas: 
+                    "header header"
+                    "main-content main-content"
+                    "sidebar chat";
+                grid-template-columns: 1fr 1fr;
+                grid-template-rows: 80px 1fr 300px;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #00ff88;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                🧠 NeuroCluster Elite
+            </div>
+            <div class="status-indicators">
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>NCS Algorithm Active</span>
+                </div>
+                <div class="status-indicator">
+                    <div class="status-dot" style="background: #00ccff;"></div>
+                    <span>Market Data Live</span>
+                </div>
+                <div class="status-indicator">
+                    <div class="status-dot" style="background: #ffc107;"></div>
+                    <span>12 Assets Tracked</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="portfolio-summary">
+                <div class="portfolio-value">$124,573.82</div>
+                <div class="portfolio-change">+$4,327.23 (+3.6%) Today</div>
+            </div>
+
+            <div class="asset-allocation">
+                <h3 style="margin-bottom: 16px;">Asset Allocation</h3>
+                <div class="asset-item">
+                    <div class="asset-type">
+                        <div class="asset-icon" style="background: rgba(0, 123, 255, 0.3);">📈</div>
+                        Stocks
+                    </div>
+                    <span>65%</span>
+                </div>
+                <div class="asset-item">
+                    <div class="asset-type">
+                        <div class="asset-icon" style="background: rgba(255, 193, 7, 0.3);">₿</div>
+                        Crypto
+                    </div>
+                    <span>25%</span>
+                </div>
+                <div class="asset-item">
+                    <div class="asset-type">
+                        <div class="asset-icon" style="background: rgba(40, 167, 69, 0.3);">💱</div>
+                        Forex
+                    </div>
+                    <span>10%</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 24px;">
+                <h3 style="margin-bottom: 16px;">Risk Metrics</h3>
+                <div style="font-size: 14px; color: #aaa;">
+                    <div style="margin-bottom: 8px;">Portfolio Beta: <span style="color: #00ff88;">0.87</span></div>
+                    <div style="margin-bottom: 8px;">Sharpe Ratio: <span style="color: #00ff88;">1.42</span></div>
+                    <div style="margin-bottom: 8px;">Max Drawdown: <span style="color: #ff4757;">-3.2%</span></div>
+                    <div>VaR (95%): <span style="color: #ffc107;">-2.1%</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
+                <div class="tab" onclick="switchTab('strategies')">Strategies</div>
+                <div class="tab" onclick="switchTab('analytics')">Analytics</div>
+                <div class="tab" onclick="switchTab('settings')">Settings</div>
+            </div>
+
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">Market Regime Detection</div>
+                        <div class="regime-indicator">
+                            <span id="current-regime">📈 Bull Market</span>
+                            <div class="regime-confidence">87.3%</div>
+                        </div>
+                    </div>
+                    <div id="regime-chart" style="height: 300px;"></div>
+                </div>
+
+                <div class="controls">
+                    <button class="control-button active" onclick="togglePaperTrading()">Paper Trading</button>
+                    <button class="control-button" onclick="toggleAutoTrading()">Auto Trading</button>
+                    <button class="control-button" onclick="refreshData()">Refresh Data</button>
+                    <button class="control-button" onclick="exportData()">Export</button>
+                </div>
+
+                <div class="market-grid" id="market-grid">
+                    <!-- Market cards will be populated by JavaScript -->
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">Portfolio Performance</div>
+                    </div>
+                    <div id="portfolio-chart" style="height: 400px;"></div>
+                </div>
+            </div>
+
+            <!-- Strategies Tab -->
+            <div id="strategies" class="tab-content">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">Active Trading Strategies</div>
+                    </div>
+                    <div id="strategies-content">
+                        <!-- Strategies content will be populated -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Tab -->
+            <div id="analytics" class="tab-content">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">Advanced Analytics</div>
+                    </div>
+                    <div id="analytics-chart" style="height: 400px;"></div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">Platform Settings</div>
+                    </div>
+                    <div id="settings-content">
+                        <!-- Settings content will be populated -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Panel -->
+        <div class="chat-panel">
+            <div class="chat-header">
+                🤖 NeuroCluster AI Assistant
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="message ai">
+                    <strong>NeuroCluster AI:</strong> Welcome to NeuroCluster Elite! I'm analyzing market regimes in real-time using our proven algorithm with 99.59% efficiency. How can I help you trade smarter today?
+                </div>
+                <div class="message">
+                    <strong>System:</strong> Bull market regime detected with 87.3% confidence. Momentum strategies active.
+                </div>
+            </div>
+            <div class="chat-input">
+                <div class="input-group">
+                    <input type="text" id="chat-input" placeholder="Ask about markets, strategies, or voice commands..." onkeypress="handleChatKeypress(event)">
+                    <button onclick="sendChatMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerts Panel -->
+        <div class="alerts">
+            <h3 style="margin-bottom: 16px;">📢 Smart Alerts</h3>
+            <div class="alert-item">
+                AAPL: Breakout pattern detected above $180 resistance
+            </div>
+            <div class="alert-item">
+                BTC-USD: High volatility regime change at $45,000 level
+            </div>
+            <div class="alert-item">
+                Portfolio: Stop-loss triggered for TSLA position
+            </div>
+        </div>
+    </div>
+
+    <!-- Voice Control -->
+    <div class="voice-control" onclick="toggleVoiceControl()" id="voice-button">
+        🎤
+    </div>
+
+    <script>
+        // Global state
+        let isVoiceListening = false;
+        let marketData = {};
+        let currentRegime = 'Bull Market';
+        let regimeConfidence = 87.3;
+        let isAutoTrading = false;
+        let isPaperTrading = true;
+
+        // Sample market data
+        const sampleMarketData = {
+            'AAPL': { symbol: 'AAPL', price: 182.45, change: 3.27, changePercent: 1.82, assetType: 'stock' },
+            'GOOGL': { symbol: 'GOOGL', price: 2847.32, change: -12.45, changePercent: -0.43, assetType: 'stock' },
+            'MSFT': { symbol: 'MSFT', price: 378.92, change: 5.83, changePercent: 1.56, assetType: 'stock' },
+            'TSLA': { symbol: 'TSLA', price: 254.67, change: -8.34, changePercent: -3.17, assetType: 'stock' },
+            'BTC-USD': { symbol: 'BTC-USD', price: 45234.78, change: 1234.56, changePercent: 2.81, assetType: 'crypto' },
+            'ETH-USD': { symbol: 'ETH-USD', price: 3156.23, change: -87.43, changePercent: -2.69, assetType: 'crypto' },
+            'EURUSD': { symbol: 'EURUSD', price: 1.0892, change: 0.0023, changePercent: 0.21, assetType: 'forex' },
+            'GBPUSD': { symbol: 'GBPUSD', price: 1.2734, change: -0.0045, changePercent: -0.35, assetType: 'forex' }
+        };
+
+        // Initialize the platform
+        function initializePlatform() {
+            console.log('🚀 Initializing NeuroCluster Elite Platform');
+            marketData = sampleMarketData;
+            
+            // Create market cards
+            createMarketCards();
+            
+            // Initialize charts
+            initializeCharts();
+            
+            // Start real-time updates
+            startRealTimeUpdates();
+            
+            // Add welcome message
+            addChatMessage('system', 'Platform initialized with NCS algorithm. Ready for trading!');
+        }
+
+        // Create market data cards
+        function createMarketCards() {
+            const gridContainer = document.getElementById('market-grid');
+            gridContainer.innerHTML = '';
+
+            Object.values(marketData).forEach(data => {
+                const card = document.createElement('div');
+                card.className = 'market-card';
+                
+                const changeClass = data.change >= 0 ? 'positive' : 'negative';
+                const changeSymbol = data.change >= 0 ? '+' : '';
+                
+                card.innerHTML = `
+                    <div class="symbol-header">
+                        <div class="symbol-name">${data.symbol}</div>
+                        <div class="asset-badge ${data.assetType}">${data.assetType}</div>
+                    </div>
+                    <div class="price-info">
+                        <div class="current-price">$${data.price.toLocaleString()}</div>
+                        <div class="price-change">
+                            <div class="change-value ${changeClass}">
+                                ${changeSymbol}$${Math.abs(data.change).toFixed(2)}
+                            </div>
+                            <div class="change-percent ${changeClass}">
+                                (${changeSymbol}${data.changePercent.toFixed(2)}%)
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                gridContainer.appendChild(card);
+            });
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            // Regime detection chart
+            const regimeData = [{
+                x: Array.from({length: 50}, (_, i) => new Date(Date.now() - (49-i) * 60000)),
+                y: Array.from({length: 50}, () => Math.random() * 0.4 + 0.6),
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Regime Confidence',
+                line: { color: '#00ff88', width: 3 }
+            }];
+
+            const regimeLayout = {
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: { color: '#ffffff' },
+                xaxis: { color: '#666', gridcolor: '#333' },
+                yaxis: { color: '#666', gridcolor: '#333', title: 'Confidence' },
+                showlegend: false,
+                margin: { t: 30, r: 30, b: 50, l: 50 }
+            };
+
+            Plotly.newPlot('regime-chart', regimeData, regimeLayout, {responsive: true});
+
+            // Portfolio performance chart
+            const portfolioData = [{
+                x: Array.from({length: 30}, (_, i) => new Date(Date.now() - (29-i) * 24*60*60*1000)),
+                y: Array.from({length: 30}, (_, i) => 100000 + Math.random() * 25000 + i * 800),
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Portfolio Value',
+                line: { color: '#00ccff', width: 3 }
+            }];
+
+            const portfolioLayout = {
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: { color: '#ffffff' },
+                xaxis: { color: '#666', gridcolor: '#333' },
+                yaxis: { color: '#666', gridcolor: '#333', title: 'Portfolio Value ($)' },
+                showlegend: false,
+                margin: { t: 30, r: 30, b: 50, l: 50 }
+            };
+
+            Plotly.newPlot('portfolio-chart', portfolioData, portfolioLayout, {responsive: true});
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            // Load tab-specific content
+            loadTabContent(tabName);
+        }
+
+        // Load tab-specific content
+        function loadTabContent(tabName) {
+            switch(tabName) {
+                case 'strategies':
+                    loadStrategiesContent();
+                    break;
+                case 'analytics':
+                    loadAnalyticsContent();
+                    break;
+                case 'settings':
+                    loadSettingsContent();
+                    break;
+            }
+        }
+
+        // Load strategies content
+        function loadStrategiesContent() {
+            const content = document.getElementById('strategies-content');
+            content.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
+                    <div class="market-card">
+                        <h4>🚀 Bull Momentum Strategy</h4>
+                        <p>Status: <span style="color: #00ff88;">Active</span></p>
+                        <p>Performance: +15.2% (30 days)</p>
+                        <p>Assets: AAPL, MSFT, NVDA</p>
+                    </div>
+                    <div class="market-card">
+                        <h4>⚡ Volatility Trading</h4>
+                        <p>Status: <span style="color: #ffc107;">Monitoring</span></p>
+                        <p>Performance: +8.7% (30 days)</p>
+                        <p>Assets: BTC-USD, ETH-USD</p>
+                    </div>
+                    <div class="market-card">
+                        <h4>🦘 Range Trading</h4>
+                        <p>Status: <span style="color: #00ccff;">Standby</span></p>
+                        <p>Performance: +3.4% (30 days)</p>
+                        <p>Assets: EURUSD, GBPUSD</p>
+                    </div>
+                    <div class="market-card">
+                        <h4>🏗️ Accumulation Strategy</h4>
+                        <p>Status: <span style="color: #00ff88;">Active</span></p>
+                        <p>Performance: +12.1% (30 days)</p>
+                        <p>Assets: GOOGL, TSLA</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load analytics content
+        function loadAnalyticsContent() {
+            // Create correlation heatmap
+            const correlationData = [{
+                z: [
+                    [1, 0.8, 0.7, 0.2, 0.1, 0.3],
+                    [0.8, 1, 0.9, 0.3, 0.2, 0.1],
+                    [0.7, 0.9, 1, 0.1, 0.4, 0.2],
+                    [0.2, 0.3, 0.1, 1, 0.8, 0.6],
+                    [0.1, 0.2, 0.4, 0.8, 1, 0.7],
+                    [0.3, 0.1, 0.2, 0.6, 0.7, 1]
+                ],
+                x: ['AAPL', 'GOOGL', 'MSFT', 'BTC', 'ETH', 'EURUSD'],
+                y: ['AAPL', 'GOOGL', 'MSFT', 'BTC', 'ETH', 'EURUSD'],
+                type: 'heatmap',
+                colorscale: 'Viridis'
+            }];
+
+            const correlationLayout = {
+                title: 'Asset Correlation Matrix',
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: { color: '#ffffff' }
+            };
+
+            Plotly.newPlot('analytics-chart', correlationData, correlationLayout, {responsive: true});
+        }
+
+        // Load settings content
+        function loadSettingsContent() {
+            const content = document.getElementById('settings-content');
+            content.innerHTML = `
+                <div style="display: grid; gap: 24px;">
+                    <div class="market-card">
+                        <h4>🧠 NeuroCluster Algorithm Settings</h4>
+                        <div style="margin-top: 16px;">
+                            <label style="display: block; margin-bottom: 8px;">Similarity Threshold: <span id="similarity-value">0.75</span></label>
+                            <input type="range" min="0.5" max="1" step="0.01" value="0.75" 
+                                   onchange="updateSimilarityThreshold(this.value)" style="width: 100%;">
+                        </div>
+                        <div style="margin-top: 16px;">
+                            <label style="display: block; margin-bottom: 8px;">Learning Rate: <span id="learning-value">0.14</span></label>
+                            <input type="range" min="0.01" max="0.5" step="0.01" value="0.14" 
+                                   onchange="updateLearningRate(this.value)" style="width: 100%;">
+                        </div>
+                    </div>
+                    <div class="market-card">
+                        <h4>💼 Risk Management</h4>
+                        <div style="margin-top: 16px;">
+                            <label style="display: block; margin-bottom: 8px;">Max Position Size: <span id="position-value">10%</span></label>
+                            <input type="range" min="1" max="25" step="1" value="10" 
+                                   onchange="updatePositionSize(this.value)" style="width: 100%;">
+                        </div>
+                        <div style="margin-top: 16px;">
+                            <label style="display: block; margin-bottom: 8px;">Stop Loss: <span id="stoploss-value">5%</span></label>
+                            <input type="range" min="1" max="15" step="0.5" value="5" 
+                                   onchange="updateStopLoss(this.value)" style="width: 100%;">
+                        </div>
+                    </div>
+                    <div class="market-card">
+                        <h4>🔔 Alert Settings</h4>
+                        <div style="margin-top: 16px;">
+                            <label><input type="checkbox" checked> Email Alerts</label><br>
+                            <label><input type="checkbox" checked> Voice Alerts</label><br>
+                            <label><input type="checkbox"> Discord Notifications</label><br>
+                            <label><input type="checkbox"> Telegram Alerts</label>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Settings update functions
+        function updateSimilarityThreshold(value) {
+            document.getElementById('similarity-value').textContent = value;
+            addChatMessage('system', `NCS similarity threshold updated to ${value}`);
+        }
+
+        function updateLearningRate(value) {
+            document.getElementById('learning-value').textContent = value;
+            addChatMessage('system', `NCS learning rate updated to ${value}`);
+        }
+
+        function updatePositionSize(value) {
+            document.getElementById('position-value').textContent = value + '%';
+            addChatMessage('system', `Max position size updated to ${value}%`);
+        }
+
+        function updateStopLoss(value) {
+            document.getElementById('stoploss-value').textContent = value + '%';
+            addChatMessage('system', `Stop loss updated to ${value}%`);
+        }
+
+        // Control functions
+        function togglePaperTrading() {
+            isPaperTrading = !isPaperTrading;
+            const button = event.target;
+            button.classList.toggle('active');
+            const status = isPaperTrading ? 'enabled' : 'disabled';
+            addChatMessage('system', `Paper trading ${status}`);
+        }
+
+        function toggleAutoTrading() {
+            isAutoTrading = !isAutoTrading;
+            const button = event.target;
+            button.classList.toggle('active');
+            const status = isAutoTrading ? 'enabled' : 'disabled';
+            addChatMessage('system', `Auto trading ${status}`);
+        }
+
+        function refreshData() {
+            // Simulate data refresh
+            Object.keys(marketData).forEach(symbol => {
+                const data = marketData[symbol];
+                const changePercent = (Math.random() - 0.5) * 5; // Random change -2.5% to +2.5%
+                const newPrice = data.price * (1 + changePercent / 100);
+                const change = newPrice - data.price;
+                
+                marketData[symbol] = {
+                    ...data,
+                    price: parseFloat(newPrice.toFixed(2)),
+                    change: parseFloat(change.toFixed(2)),
+                    changePercent: parseFloat(changePercent.toFixed(2))
+                };
+            });
+            
+            createMarketCards();
+            addChatMessage('system', 'Market data refreshed');
+        }
+
+        function exportData() {
+            const dataToExport = {
+                timestamp: new Date().toISOString(),
+                marketData: marketData,
+                portfolioValue: 124573.82,
+                regime: currentRegime,
+                confidence: regimeConfidence
+            };
+            
+            const dataStr = JSON.stringify(dataToExport, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `neurocluster-data-${Date.now()}.json`;
+            link.click();
+            
+            addChatMessage('system', 'Data exported successfully');
+        }
+
+        // Chat functions
+        function addChatMessage(sender, message) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = sender === 'ai' ? 'message ai' : 'message';
+            
+            const senderName = sender === 'ai' ? 'NeuroCluster AI' : 
+                             sender === 'system' ? 'System' : 'You';
+            
+            messageDiv.innerHTML = `<strong>${senderName}:</strong> ${message}`;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            
+            if (message) {
+                addChatMessage('user', message);
+                input.value = '';
+                
+                // Simulate AI response
+                setTimeout(() => {
+                    const responses = [
+                        "The NeuroCluster algorithm is detecting strong momentum in tech stocks. Consider increasing allocation.",
+                        "Current volatility suggests a regime change may be incoming. Monitor for breakout patterns.",
+                        "Risk metrics are within normal ranges. Portfolio diversification looks good.",
+                        "Based on sentiment analysis, crypto markets show bullish sentiment. BTC target: $48,000.",
+                        "MACD crossover detected on AAPL. Momentum strategy recommends entry at current levels."
+                    ];
+                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                    addChatMessage('ai', randomResponse);
+                }, 1000);
+            }
+        }
+
+        function handleChatKeypress(event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        // Voice control
+        function toggleVoiceControl() {
+            isVoiceListening = !isVoiceListening;
+            const button = document.getElementById('voice-button');
+            
+            if (isVoiceListening) {
+                button.classList.add('listening');
+                button.innerHTML = '🔴';
+                addChatMessage('system', 'Voice control activated. Speak your command...');
+                
+                // Simulate voice recognition
+                setTimeout(() => {
+                    const voiceCommands = [
+                        "Show me Bitcoin price",
+                        "What's the current market regime?",
+                        "Enable auto trading",
+                        "Show portfolio performance",
+                        "Alert me when AAPL hits $185"
+                    ];
+                    const command = voiceCommands[Math.floor(Math.random() * voiceCommands.length)];
+                    addChatMessage('user', `Voice: ${command}`);
+                    
+                    // Process voice command
+                    processVoiceCommand(command);
+                    
+                    // Stop listening
+                    setTimeout(() => {
+                        isVoiceListening = false;
+                        button.classList.remove('listening');
+                        button.innerHTML = '🎤';
+                    }, 2000);
+                }, 3000);
+            } else {
+                button.classList.remove('listening');
+                button.innerHTML = '🎤';
+                addChatMessage('system', 'Voice control deactivated');
+            }
+        }
+
+        function processVoiceCommand(command) {
+            if (command.includes('Bitcoin') || command.includes('BTC')) {
+                const btcPrice = marketData['BTC-USD'].price;
+                addChatMessage('ai', `Bitcoin is currently trading at $${btcPrice.toLocaleString()}`);
+            } else if (command.includes('regime')) {
+                addChatMessage('ai', `Current market regime is ${currentRegime} with ${regimeConfidence}% confidence`);
+            } else if (command.includes('auto trading')) {
+                toggleAutoTrading();
+            } else if (command.includes('portfolio')) {
+                addChatMessage('ai', 'Portfolio is up 3.6% today at $124,573.82. Strong performance across tech holdings.');
+            } else {
+                addChatMessage('ai', 'Command processed. Let me analyze that for you...');
+            }
+        }
+
+        // Real-time updates
+        function startRealTimeUpdates() {
+            setInterval(() => {
+                // Update regime confidence
+                regimeConfidence = Math.max(75, Math.min(95, regimeConfidence + (Math.random() - 0.5) * 5));
+                document.querySelector('.regime-confidence').textContent = regimeConfidence.toFixed(1) + '%';
+                
+                // Randomly update market data
+                if (Math.random() < 0.3) { // 30% chance each interval
+                    refreshData();
+                }
+                
+                // Update status indicators
+                const dots = document.querySelectorAll('.status-dot');
+                dots.forEach(dot => {
+                    if (Math.random() < 0.1) { // 10% chance to pulse
+                        dot.style.transform = 'scale(1.2)';
+                        setTimeout(() => {
+                            dot.style.transform = 'scale(1)';
+                        }, 200);
+                    }
+                });
+            }, 5000); // Update every 5 seconds
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePlatform();
+        });
+
+        // Cleanup
+        window.addEventListener('beforeunload', function() {
+            console.log('🛑 NeuroCluster Elite shutting down');
+        });
+    </script>
+</body>
+</html>
