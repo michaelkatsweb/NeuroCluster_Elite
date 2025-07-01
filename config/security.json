@@ -1,0 +1,25 @@
+{
+  "encryption": {
+    "algorithm": "AES-256-GCM",
+    "key_rotation_days": 30
+  },
+  "authentication": {
+    "jwt_expiry_hours": 24,
+    "refresh_token_days": 30,
+    "max_login_attempts": 5,
+    "lockout_duration_minutes": 15
+  },
+  "rate_limiting": {
+    "requests_per_minute": 100,
+    "burst_allowance": 20
+  },
+  "security_headers": {
+    "hsts_max_age": 31536000,
+    "csp_policy": "default-src 'self'; script-src 'self' 'unsafe-inline'"
+  },
+  "intrusion_detection": {
+    "enabled": true,
+    "threat_threshold": 20,
+    "block_duration_minutes": 60
+  }
+}
