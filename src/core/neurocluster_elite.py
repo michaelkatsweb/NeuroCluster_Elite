@@ -15,7 +15,7 @@ Features:
 - Performance optimization maintaining 0.045ms processing
 - Memory-efficient data structures
 
-Author: Your Name
+Author: Katsaros Michael
 Created: 2025-06-28
 Version: 2.0.0 (Enhanced from proven 1.0.0)
 License: MIT

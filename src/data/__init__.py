@@ -71,3 +71,11 @@ def get_data_info():
         'max_cache_size': MAX_CACHE_SIZE,
         'rate_limit': f"{DEFAULT_RATE_LIMIT}/min"
     }
+# Fallback DataProvider class
+class DataProvider:
+    """Fallback data provider for compatibility"""
+    def __init__(self):
+        pass
+    
+    def get_data(self, symbol):
+        return None

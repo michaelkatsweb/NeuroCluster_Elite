@@ -17,7 +17,7 @@ Features:
 - News sentiment analysis with source weighting
 - Integration with NeuroCluster regime detection
 
-Author: Your Name
+Author: michael Katsaros
 Created: 2025-06-29
 Version: 1.0.0
 License: MIT

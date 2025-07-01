@@ -18,7 +18,7 @@ Features:
 - Performance-optimized vectorized computations
 - Real-time feature streaming capabilities
 
-Author: Your Name
+Author: Michael Katsaros
 Created: 2025-06-29
 Version: 1.0.0
 License: MIT

@@ -36,6 +36,7 @@ from enum import Enum
 import threading
 import queue
 import traceback
+from typing import Dict, Any, Optional, Callable, Union, List
 
 # ==================== ENUMS AND DATA STRUCTURES ====================
 
@@ -57,6 +58,7 @@ class LogCategory(Enum):
     PERFORMANCE = "performance"
     USER = "user"
     API = "api"
+    RISK = "risk"
 
 @dataclass
 class LogEntry:
@@ -575,8 +577,7 @@ class LogAnalyzer:
         
         return analysis
     
-    def _get_slowest_functions(self, performance_data: List[Dict], top_n: int = 10) -> List[Dict]:
-        """Get the slowest functions"""
+    def get_slowest_functions(self, performance_data: List[Dict], top_n: int = 10) -> List[Dict]:
         
         function_stats = {}
         
