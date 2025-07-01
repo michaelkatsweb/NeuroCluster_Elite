@@ -1,0 +1,20 @@
+2025-06-30 19:32:25,336 - __main__ - ERROR - Failed to import modules: No module named 'numba'
+2025-06-30 19:32:25,336 - __main__ - ERROR - Make sure you're running from the project root directory
+2025-06-30 19:32:25,337 - __main__ - ERROR - Try running: pip install -e .
+2025-06-30 19:35:01,254 - __main__ - ERROR - Failed to import modules: No module named 'numba'
+2025-06-30 19:35:01,254 - __main__ - ERROR - Make sure you're running from the project root directory
+2025-06-30 19:35:01,254 - __main__ - ERROR - Try running: pip install -e .
+2025-06-30 19:39:40,409 - __main__ - ERROR - Failed to import modules: No module named 'numba'
+2025-06-30 19:39:40,409 - __main__ - ERROR - Make sure you're running from the project root directory
+2025-06-30 19:39:40,409 - __main__ - ERROR - Try running: pip install -e .
+2025-06-30 19:42:23,355 - numexpr.utils - INFO - NumExpr defaulting to 8 threads.
+2025-06-30 19:42:26,371 - __main__ - ERROR - Failed to import modules: No module named 'redis'
+2025-06-30 19:42:26,371 - __main__ - ERROR - Make sure you're running from the project root directory
+2025-06-30 19:42:26,372 - __main__ - ERROR - Try running: pip install -e .
+2025-06-30 19:45:40,923 - numexpr.utils - INFO - NumExpr defaulting to 8 threads.
+2025-06-30 19:48:08,829 - numexpr.utils - INFO - NumExpr defaulting to 8 threads.
+2025-06-30 19:48:54,900 - numexpr.utils - INFO - NumExpr defaulting to 8 threads.
+2025-06-30 19:49:08,618 - numexpr.utils - INFO - NumExpr defaulting to 8 threads.
+2025-06-30 19:51:59,475 - numexpr.utils - INFO - NumExpr defaulting to 8 threads.
+2025-06-30 19:54:33,233 - numexpr.utils - INFO - NumExpr defaulting to 8 threads.
+2025-06-30 21:00:38,572 - numexpr.utils - INFO - NumExpr defaulting to 8 threads.
